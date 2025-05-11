@@ -1,190 +1,182 @@
 // resources/js/templates/AuthenticatedLayout.jsx
 
-// Import komponen Atomic Design dan lainnya
+// Import komponen
 import ApplicationLogo from '@/components/atoms/ApplicationLogo';
 import Dropdown from '@/components/molecules/Dropdown';
-import NavLink from '@/components/atoms/NavLink';
-// ResponsiveNavLink mungkin masih digunakan untuk mobile sidebar, tapi tidak di nav desktop sidebar
-// import ResponsiveNavLink from '@/components/atoms/ResponsiveNavLink'; // Keep if planning for mobile responsive sidebar
+import NavLink from '@/components/atoms/NavLink'; // NavLink sudah dimodifikasi sebelumnya
+import ResponsiveNavLink from '@/components/atoms/ResponsiveNavLink'; // Digunakan untuk navigasi di sidebar mobile
 
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react'; // Keep if planning for mobile responsive sidebar toggle
-// Utilitas
-import hasAnyPermission from '@/utils/Permissions';
+import { useState } from 'react'; // State untuk toggle sidebar mobile
+// Import ikon untuk tombol toggle sidebar mobile
+import { IconMenu2, IconX } from '@tabler/icons-react'; // Pastikan ikon dari @tabler/icons-react sudah terinstall dan diimpor
+
+// Utilitas untuk cek izin
+import hasAnyPermission from '@/utils/Permissions'; // Pastikan path ini benar
 
 
 export default function AuthenticatedLayout({ header, children }) {
+    // Mengambil data user yang sedang login dari props Inertia
     const user = usePage().props.auth.user;
 
-    // State untuk mengontrol tampilan dropdown navigasi responsif (untuk mobile)
-    // Ini mungkin perlu disesuaikan atau diubah namanya jika Anda mengimplementasikan sidebar mobile yang bisa di-toggle
+    // State untuk mengontrol tampilan sidebar di perangkat mobile
+    // Nama state ini awalnya dari dropdown navigasi horizontal, tapi kita gunakan untuk sidebar mobile
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+
+    // Fungsi untuk men-toggle tampilan sidebar mobile
+    const toggleSidebar = () => {
+        setShowingNavigationDropdown((prevState) => !prevState);
+    };
 
     return (
         // === Struktur Layout Utama: Flex Container ===
         // Menggunakan flex untuk menata sidebar (kiri) dan konten utama (kanan) berdampingan
+        // min-h-screen membuat kontainer setinggi minimal viewport
         <div className="flex min-h-screen bg-gray-100">
 
             {/* === Sidebar Kiri === */}
-            {/* Mengatur lebar tetap (w-64), tinggi penuh layar (h-screen), latar belakang, border kanan, tata letak vertikal, dan overflow-y */}
-            {/* sticky top-0 menjaga sidebar tetap di atas saat konten utama di-scroll */}
-            <div className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 overflow-y-auto">
+            {/* === INI BAGIAN KODE SIDEBAR YANG PERLU DIGANTI === */}
+            {/* Menggabungkan styling mobile (default) dan desktop (sm:...) */}
+            {/* fixed inset-y-0 left-0 z-50: Memasang sidebar di posisi tetap kiri (untuk mobile) */}
+            {/* w-64: Lebar saat terbuka di mobile */}
+            {/* transform -translate-x-full: Menyembunyikan sidebar ke kiri di mobile secara default */}
+            {/* transition-transform: Menambahkan animasi saat sidebar bergeser */}
+            {/* sm:translate-x-0: Meng-override di breakpoint 'sm' ke atas: sidebar selalu terlihat */}
+            {/* sm:relative: Meng-override positioning 'fixed' di breakpoint 'sm' ke atas */}
+            {/* sm:w-64: Mengatur lebar di breakpoint 'sm' ke atas */}
+            <div
+                className={`
+                    fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 flex flex-col h-screen overflow-y-auto transition-transform ease-in-out duration-300
+                    ${showingNavigationDropdown ? 'translate-x-0' : '-translate-x-full'} /* Menggeser sidebar masuk/keluar di mobile berdasarkan state */
+                    sm:translate-x-0 sm:relative sm:w-64 /* Membuat sidebar permanen di desktop */
+                `}
+            >
 
                 {/* Bagian Header Sidebar (Logo/Nama Aplikasi) */}
-                {/* Menjaga konsistensi padding dan penempatan logo */}
-                <div className="flex shrink-0 items-center justify-center px-6 py-4 border-b border-gray-100">
+                <div className="flex shrink-0 items-center justify-between px-6 py-4 border-b border-gray-100">
                     <Link href="/">
-                        {/* Menggunakan komponen atom ApplicationLogo */}
                         <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
                     </Link>
-                    {/* Optional: <span className="ml-2 text-xl font-semibold text-gray-800">SITARUNA</span> */}
+                    {/* Tombol Tutup Sidebar (Hanya di Mobile) */}
+                    <button
+                        onClick={toggleSidebar}
+                        className="sm:hidden p-1 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 ml-auto"
+                    >
+                         <IconX size={24} strokeWidth={1.5} />
+                    </button>
                 </div>
 
                 {/* Bagian Navigasi Sidebar */}
-                {/* Menggunakan flex-col dan space-y untuk menata tautan navigasi secara vertikal */}
                 <nav className="flex flex-col flex-1 px-4 py-6 space-y-1">
-                    {/* Menggunakan komponen atom NavLink */}
-                    {/* Sesuaikan class styling NavLink agar cocok untuk tampilan vertikal di sidebar */}
-                    {/* Styling 'block w-full py-2 px-3 rounded-md hover:bg-gray-100' adalah contoh dasar untuk sidebar */}
-                    <NavLink
-                        href={route('dashboard')}
-                        active={route().current('dashboard')}
-                        className="block w-full py-2 px-3 rounded-md hover:bg-gray-100"
-                    >
+                    {/* Menggunakan komponen NavLink (untuk desktop) */}
+                    <NavLink href={route('dashboard')} active={route().current('dashboard')} className="block w-full py-2 px-3 rounded-md hover:bg-gray-100">
                         Dashboard
                     </NavLink>
-                    {hasAnyPermission(['roles index']) &&
-                         <NavLink
-                            href={route('roles.index')}
-                            active={route().current('roles.index')}
-                            className="block w-full py-2 px-3 rounded-md hover:bg-gray-100"
-                        >
-                            Roles
-                        </NavLink>
-                    }
-                    {hasAnyPermission(['permissions index']) &&
-                         <NavLink
-                            href={route('permissions.index')}
-                            active={route().current('permissions.index')}
-                             className="block w-full py-2 px-3 rounded-md hover:bg-gray-100"
-                        >
-                            Permissions
-                        </NavLink>
-                    }
-                    {hasAnyPermission(['users index']) &&
-                         <NavLink
-                            href={route('users.index')}
-                            active={route().current('users.index')}
-                             className="block w-full py-2 px-3 rounded-md hover:bg-gray-100"
-                        >
-                            Users
-                        </NavLink>
-                    }
-                    {/* Tambahkan NavLink lain sesuai kebutuhan aplikasi SITARUNA */}
+                    {hasAnyPermission(['roles index']) && <NavLink href={route('roles.index')} active={route().current('roles.index')} className="block w-full py-2 px-3 rounded-md hover:bg-gray-100">Roles</NavLink>}
+                    {hasAnyPermission(['permissions index']) && <NavLink href={route('permissions.index')} active={route().current('permissions.index')} className="block w-full py-2 px-3 rounded-md hover:bg-gray-100">Permissions</NavLink>}
+                    {hasAnyPermission(['users index']) && <NavLink href={route('users.index')} active={route().current('users.index')} className="block w-full py-2 px-3 rounded-md hover:bg-gray-100">Users</NavLink>}
+                    {/* Tambahkan NavLink lain */}
                 </nav>
 
-                {/* Bagian Bawah Sidebar (Opsional: Info User Ringkas / Logout) */}
-                 {/* Anda bisa menambahkan info user ringkas di sini, atau tetap di top bar area konten utama */}
+                {/* Optional: Bagian Bawah Sidebar Mobile (User Info / Logout) */}
+                {/* Anda bisa memindahkan bagian ini ke sini jika ingin info user ada di dalam sidebar mobile */}
+                {/* <div className="mt-auto border-t border-gray-100 p-4 sm:hidden"> ... ResponsiveNavLink ... </div> */}
 
             </div> {/* === Akhir Sidebar Kiri === */}
 
+            {/* === Overlay untuk Mobile Sidebar === */}
+            {/* Muncul saat sidebar terbuka di mobile, menutup saat diklik */}
+            {showingNavigationDropdown && (
+                <div
+                    className="fixed inset-0 z-40 bg-black bg-opacity-25 sm:hidden"
+                    onClick={toggleSidebar} // Menutup sidebar saat overlay diklik
+                ></div>
+            )}
+
 
             {/* === Area Konten Utama (Kanan Sidebar) === */}
-            {/* Menggunakan flex-1 agar div ini mengambil sisa lebar horizontal yang tersedia */}
-            {/* Menggunakan flex-col untuk menata header top bar dan main content secara vertikal */}
-            <div className="flex-1 flex flex-col">
+            {/* flex-1 flex flex-col: Mengisi sisa ruang & menata vertikal */}
+            {/* sm:ml-64: Menambah margin kiri di desktop, sesuai lebar sidebar (sesuaikan jika lebar sidebar diubah) */}
+            <div className="flex-1 flex flex-col sm:ml-64"> {/* Sesuaikan sm:ml-64 jika lebar sidebar desktop diubah */}
 
-                {/* === Top Bar di Area Konten Utama (Header dengan Judul Halaman & Profil User) === */}
-                {/* Menggabungkan judul halaman (dari slot header) dan dropdown user dalam satu baris */}
+                {/* === Top Bar di Area Konten Utama (Header) === */}
+                {/* Mengandung Tombol Toggle Mobile, Judul Halaman, & Profil User */}
                 <header className="w-full bg-white shadow">
-                    {/* Menggunakan flex justify-between untuk menata konten di kiri (header slot) dan kanan (user dropdown) */}
-                    {/* px-4 py-6 sm:px-6 lg:px-8 adalah padding umum untuk header Inertia */}
-                    <div className="flex justify-between items-center px-4 py-6 sm:px-6 lg:px-8">
+                     <div className="flex justify-between items-center px-4 py-6 sm:px-6 lg:px-8">
 
-                        {/* Slot Header Halaman - Konten judul halaman dari komponen halaman spesifik */}
-                        {/* Ditempatkan di sisi kiri flex container ini */}
-                        <div>
+                         {/* Tombol Buka Sidebar (Hanya di Mobile) */}
+                         {/* Ditempatkan di kiri top bar */}
+                        <div className="-ms-2 flex items-center sm:hidden">
+                            <button
+                                onClick={toggleSidebar} // Memanggil toggleSidebar untuk membuka sidebar
+                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                            >
+                                 <IconMenu2 size={24} strokeWidth={1.5} />
+                            </button>
+                        </div>
+
+                        {/* Slot Header Halaman */}
+                         <div className="flex-1 px-2 sm:px-0">
                              {header}
-                        </div>
+                         </div>
 
-
-                        {/* Pengaturan Pengguna (Molekul Dropdown) - Ditempatkan di sisi kanan */}
-                        {/* === Pastikan Blok Kode Dropdown Ini Ada === */}
-                        <div className="hidden sm:flex sm:items-center"> {/* Sembunyikan di mobile jika responsive dropdown digunakan */}
+                        {/* Pengaturan Pengguna (Dropdown) */}
+                        {/* Tampil hanya di desktop */}
+                         <div className="hidden sm:flex sm:items-center">
                              <Dropdown align="right" width="48">
-                                {/* Trigger Dropdown: Tombol dengan nama user dan ikon panah */}
-                                <Dropdown.Trigger>
-                                    <span className="inline-flex rounded-md">
-                                        <button
-                                            type="button"
-                                            className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                        >
-                                            {/* Menampilkan nama user yang login */}
-                                            {user.name}
-
-                                            {/* Ikon panah dropdown */}
-                                            <svg
-                                                className="ms-2 -me-0.5 h-4 w-4"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </span>
-                                </Dropdown.Trigger>
-
-                                {/* Konten Dropdown: Link Profil dan Logout */}
-                                <Dropdown.Content>
-                                    <Dropdown.Link href={route('profile.edit')}>
-                                        Profile
-                                    </Dropdown.Link>
-                                    <Dropdown.Link
-                                        href={route('logout')}
-                                        method="post"
-                                        as="button" // Penting untuk logout via POST
-                                    >
-                                        Log Out
-                                    </Dropdown.Link>
-                                </Dropdown.Content>
-                            </Dropdown>
-                        </div>
-                         {/* === Akhir Blok Kode Dropdown === */}
-
-
-                        {/* Tombol Toggle Navigasi Responsif Asli (Horizontal Nav) */}
-                        {/* Ini adalah tombol hamburger yang ada di nav horizontal lama */}
-                        {/* Anda perlu memutuskan apakah akan menggunakan ini untuk memunculkan sidebar mobile, atau membuat tombol baru */}
-                        {/* Untuk layout sidebar, biasanya tombol toggle mobile diletakkan di top bar konten utama atau di header sidebar */}
-                        {/* Class 'sm:hidden' menyembunyikannya di breakpoint 'sm' ke atas (desktop/tablet) */}
-                        <div className="-me-2 flex items-center sm:hidden">
-                             {/* ... Kode Tombol Toggle ... */}
-                        </div>
-
-                    </div> {/* Akhir div flex justify-between */}
-                </header> {/* === Akhir Top Bar Area Konten Utama === */}
-
+                                 <Dropdown.Trigger>
+                                     <span className="inline-flex rounded-md">
+                                         <button type="button" className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none">
+                                             {user.name}
+                                             <svg className="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                                         </button>
+                                     </span>
+                                 </Dropdown.Trigger>
+                                 <Dropdown.Content>
+                                     <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
+                                     <Dropdown.Link href={route('logout')} method="post" as="button">Log Out</Dropdown.Link>
+                                 </Dropdown.Content>
+                             </Dropdown>
+                         </div>
+                    </div>
+                </header>
 
                 {/* Slot Konten Utama Halaman */}
-                {/* Flex-1 agar main mengambil sisa ruang vertikal, p-6 untuk padding, overflow-y-auto untuk scroll */}
                 <main className="flex-1 p-6 overflow-y-auto">
-                    {children} {/* Konten utama dari halaman spesifik */}
+                    {children}
                 </main>
 
-            </div> {/* === Akhir Area Konten Utama === */}
+            </div> {/* Akhir Area Konten Utama */}
 
-            {/* Navigasi Responsif Asli */}
-            {/* Ini adalah konten menu responsif yang muncul saat tombol toggle diklik di nav horizontal lama */}
-            {/* Jika Anda mengimplementasikan sidebar mobile, Anda perlu memindahkan konten ini ke dalam struktur sidebar mobile dan mengontrolnya dengan state */}
-            {/* Untuk saat ini, struktur ini tetap ada tetapi tidak terlihat di desktop (karena sm:hidden) */}
-             {/* <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}> ... Kode Konten Responsif ... </div> */}
+             {/* === Konten Navigasi Responsif (ResponsiveNavLink) === */}
+             {/* Struktur ini digunakan untuk menu yang muncul saat sidebar mobile terbuka */}
+             {/* Class 'sm:hidden' membuatnya hanya tampil di mobile */}
+             {/* State 'showingNavigationDropdown' mengontrol apakah block ini ditampilkan */}
+             <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
+                 <div className="space-y-1 pb-3 pt-2 border-b border-gray-200"> {/* Padding dan border bawah */}
+                     {/* NavLink Responsif (menggunakan ResponsiveNavLink.jsx) */}
+                     {/* Tambahkan ResponsiveNavLink untuk semua item navigasi (Dashboard, Roles, Permissions, Users, dll) */}
+                      <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Dashboard</ResponsiveNavLink>
+                       {hasAnyPermission(['roles index']) && <ResponsiveNavLink href={route('roles.index')} active={route().current('roles.index')}>Roles</ResponsiveNavLink>}
+                       {hasAnyPermission(['permissions index']) && <ResponsiveNavLink href={route('permissions.index')} active={route().current('permissions.index')}>Permissions</ResponsiveNavLink>}
+                       {hasAnyPermission(['users index']) && <ResponsiveNavLink href={route('users.index')} active={route().current('users.index')}>Users</ResponsiveNavLink>}
+                       {/* Tambahkan ResponsiveNavLink lain */}
+                 </div>
 
+                 {/* Pengaturan Pengguna Responsif (di dalam menu mobile) */}
+                 <div className="border-t border-gray-200 pb-1 pt-4">
+                     <div className="px-4">
+                          <div className="text-base font-medium text-gray-800">{user.name}</div>
+                          <div className="text-sm font-medium text-gray-500">{user.email}</div>
+                     </div>
+                     <div className="mt-3 space-y-1">
+                         {/* Link Profil dan Logout di menu mobile */}
+                         <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
+                         <ResponsiveNavLink method="post" href={route('logout')} as="button">Log Out</ResponsiveNavLink>
+                     </div>
+                 </div>
+             </div>
 
         </div> // === Akhir Struktur Layout Utama ===
     );
