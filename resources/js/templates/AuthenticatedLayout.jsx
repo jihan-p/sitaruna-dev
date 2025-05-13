@@ -142,9 +142,9 @@ export default function AuthenticatedLayout({ header, children }) {
      // === Menentukan Class untuk Margin Konten Utama ===
      // Margin kiri dinamis berdasarkan state desktop expanded
      const mainContentClasses = `
-         flex-1 flex flex-col p-6 overflow-y-auto /* padding konten & scroll */
+         flex-1 flex flex-col overflow-y-auto /* padding konten & scroll */
          // --- Margin Kiri Dinamis ---
-         ${isMobile ? 'ml-0' : (isSidebarExpanded ? 'sm:ml-64' : 'sm:ml-20')} /* Margin kiri 0 mobile, dinamis desktop */
+         ${isMobile ? 'ml-0' : (isSidebarExpanded ? 'sm:ml-0' : 'sm:ml-0')} /* Margin kiri 0 mobile, dinamis desktop */
      `; // Sesuaikan sm:ml-20 dan sm:ml-64 sesuai lebar sidebar
 
 
@@ -163,7 +163,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 {/* Bagian Header Sidebar (Logo/Nama Aplikasi & Pengunci) */}
                 {/* Sesuaikan padding & penempatan agar logo/teks terlihat di kedua mode desktop */}
                 {/* Menggunakan flex items-center justify-between untuk menata logo/nama dan pengunci */}
-                <div className="flex shrink-0 items-center px-4 py-4 border-b border-gray-200 justify-between">
+                <div className="flex shrink-0 items-center px-4 py-6 border-b border-gray-200 justify-between">
                     <div className="flex items-center"> {/* Container untuk Logo dan Nama */}
                         {/* Logo: Posisi dan warna ikon disesuaikan */}
                         <ApplicationLogo className={`block h-9 w-auto fill-current text-gray-800 ${isNavExpanded ? 'mr-3' : (!isMobile ? 'sm:mr-3' : 'mr-3')}`} /> {/* <--- Ubah sm:mx-auto menjadi sm:mr-3 */}
@@ -305,11 +305,48 @@ export default function AuthenticatedLayout({ header, children }) {
                         {/* Pengaturan Pengguna (Molekul Dropdown) */}
                         {/* === Ini di HEADER Area Konten Utama === */}
                         {/* Tampil di semua ukuran dalam implementasi ini */}
-                         <div className="ml-auto"> {/* ml-auto untuk dorong ke kanan */}
+                        <div className="ml-auto"> {/* ml-auto untuk dorong ke kanan */}
                              <Dropdown align="right" width="48">
-                                 {/* Trigger & Content Dropdown */}
-                                  <Dropdown.Trigger> {/* ... User Name & Icon ... */} </Dropdown.Trigger>
-                                  <Dropdown.Content> {/* ... Profile & Logout Links ... */}</Dropdown.Content>
+                                 {/* Trigger Dropdown: Tombol dengan nama user dan ikon panah */}
+                                  <Dropdown.Trigger>
+                                     <span className="inline-flex rounded-md">
+                                         <button
+                                             type="button"
+                                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                         >
+                                             {/* Menampilkan nama user yang sedang login */}
+                                             {user.name}
+
+                                             {/* Ikon panah dropdown */}
+                                             <svg
+                                                 className="ms-2 -me-0.5 h-4 w-4"
+                                                 xmlns="http://www.w3.org/2000/svg"
+                                                 viewBox="0 0 20 20"
+                                                 fill="currentColor"
+                                             >
+                                                 <path
+                                                     fillRule="evenodd"
+                                                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                     clipRule="evenodd"
+                                                 />
+                                             </svg>
+                                         </button>
+                                     </span>
+                                  </Dropdown.Trigger>
+
+                                 {/* Konten Dropdown: Link Profil dan Logout */}
+                                  <Dropdown.Content>
+                                     <Dropdown.Link href={route('profile.edit')}>
+                                         Profile
+                                     </Dropdown.Link>
+                                     <Dropdown.Link
+                                         href={route('logout')}
+                                         method="post"
+                                         as="button" // Penting untuk logout via POST
+                                     >
+                                         Log Out
+                                     </Dropdown.Link>
+                                  </Dropdown.Content>
                              </Dropdown>
                          </div>
 
@@ -317,7 +354,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 </header>
 
                 {/* Page Main Content Slot */}
-                <main className="flex-1 p-6 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto">
                     {children}
                 </main>
 
