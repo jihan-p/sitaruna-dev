@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom styles untuk toggle kunci sidebar */
+input[type="checkbox"]#sidebar-lock-toggle:checked + label svg {
+  @apply text-blue-600; /* Warna saat aktif */
+}
+
+/* Efek hover untuk ikon kunci */
+label[for="sidebar-lock-toggle"]:hover svg {
+  @apply text-gray-800 transition-colors duration-200;
+}
+
+/* Efek focus untuk aksesibilitas */
+input[type="checkbox"]#sidebar-lock-toggle:focus + label {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2 rounded-sm;
+}
+
+/* Animasi transisi halus untuk sidebar */
+.sidebar-transition {
+  @apply transition-all duration-300 ease-in-out;
+}

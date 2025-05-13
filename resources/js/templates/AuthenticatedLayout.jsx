@@ -29,10 +29,31 @@ export default function AuthenticatedLayout({ header, children }) {
     // State untuk mengontrol apakah sidebar expanded (baik karena hover atau lock)
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
     // State untuk mengontrol apakah sidebar dikunci (stay expanded setelah klik)
-    const [isSidebarLocked, setIsSidebarLocked] = useState(false);
+    const [isSidebarLocked, setIsSidebarLocked] = useState(() => {
+        // Baca nilai 'sidebarLocked' dari localStorage saat komponen pertama kali mount
+        // Menggunakan try...catch untuk keamanan jika localStorage tidak tersedia (misal: mode private Browse)
+        try {
+            const storedValue = localStorage.getItem('sidebarLocked');
+            // Jika ada nilai di localStorage, gunakan itu.
+            if (storedValue !== null) {
+                return storedValue === 'true';
+            } else {
+                // Jika TIDAK ada nilai di localStorage, default ke true hanya jika di desktop.
+                // Deteksi awal isMobile di sini atau gunakan state isMobile setelah mount.
+                // Pendekatan sederhana: asumsikan desktop jika tidak ada nilai dan window ada
+                const initialIsMobile = typeof window !== 'undefined' ? window.innerWidth < 640 : false;
+                return !initialIsMobile; // Default to locked (true) if not mobile and no stored value
+            }
+        } catch (e) {
+            console.error("Failed to read from localStorage:", e);
+            // Jika gagal membaca dari localStorage, default ke true hanya jika di desktop
+            const initialIsMobile = typeof window !== 'undefined' ? window.innerWidth < 640 : false;
+            return !initialIsMobile; // Default to locked (true) if not mobile on error
+        }
+    });
 
     // State untuk mendeteksi apakah layar berukuran mobile (< sm)
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 640); // 640px adalah breakpoint 'sm' default
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false); // 640px adalah breakpoint 'sm' default
 
     // Ref untuk elemen sidebar (agar bisa pasang event listener)
     const sidebarRef = useRef(null);
@@ -72,16 +93,23 @@ export default function AuthenticatedLayout({ header, children }) {
                 setIsSidebarExpanded(false);
                 setIsSidebarLocked(false);
                 // Tutup sidebar mobile jika terbuka saat resize ke desktop (jika perlu)
-                // if (!mobile && isMobileSidebarOpen) {
-                //      setIsMobileSidebarOpen(false);
-                // }
+                if (isMobileSidebarOpen) {
+                     setIsMobileSidebarOpen(false);
+                }
             } else {
-                 // Saat beralih dari mobile ke desktop, atur expanded sesuai locked state
-                 // Jika dikunci, expanded. Jika tidak, collapsed default.
-                 setIsSidebarExpanded(isSidebarLocked);
+                 // Jika beralih ke desktop:
+                 // Atur expanded sesuai state locked (yang sudah dimuat dari localStorage saat init)
+                 setIsSidebarExpanded(isSidebarLocked); // isSidebarExpanded mengikuti isSidebarLocked
+                 // Tutup sidebar mobile jika terbuka saat resize dari mobile ke desktop
+                 if (isMobileSidebarOpen) {
+                      setIsMobileSidebarOpen(false);
+                 }
             }
         };
 
+        // === INISIALISASI AWAL UNTUK isMobile SETELAH KOMPONEN MOUNT ===
+        // Panggil handler resize sekali saat komponen mount untuk mengatur state isMobile awal
+        handleResize(); // Call handleResize once on mount
 
         // --- Tambahkan Event Listeners ---
         // Listener Mouse Hover/Leave hanya di desktop
@@ -115,6 +143,14 @@ export default function AuthenticatedLayout({ header, children }) {
     const toggleSidebarLock = () => {
         const nextLockedState = !isSidebarLocked;
         setIsSidebarLocked(nextLockedState);
+        // TAMBAHKAN BARIS INI UNTUK MENYIMPAN KE localStorage
+        // Simpan status terkunci baru (dalam bentuk string 'true' atau 'false') ke localStorage
+        // Menggunakan try...catch untuk keamanan
+        try {
+             localStorage.setItem('sidebarLocked', nextLockedState.toString());
+        } catch (e) {
+             console.error("Failed to write to localStorage:", e);
+        }
         // Saat dikunci (true), pastikan expanded. Saat tidak dikunci (false), kembali ke default (collapsed)
         setIsSidebarExpanded(nextLockedState);
     };
@@ -176,29 +212,24 @@ export default function AuthenticatedLayout({ header, children }) {
                     {/* === Kontrol Pengunci Sidebar (Desktop Only) === */}
                     {/* Tampil hanya di desktop (!isMobile) */}
                     {!isMobile && (
-                         <div className="flex items-center ml-auto"> {/* ml-auto untuk mendorong ke kanan */}
-                             {/* Menggunakan checkbox yang distyling agar mirip toggle/radio */}
-                             {/* Klik pada input atau label akan memanggil toggleSidebarLock */}
+                         <div className={`flex items-center ml-auto ${!isSidebarExpanded ? 'sm:-mr-4' : ''}`}>
+                             {/* Checkbox input asli (tersembunyi secara visual) */}
+                             {/* ID sidebar-lock-toggle menghubungkan input ini dengan label di bawahnya */}
+                             {/* Menggunakan class sr-only untuk menyembunyikan */}
                              <input
                                  type="checkbox"
-                                 id="sidebar-lock-toggle" // Berikan ID unik
-                                 checked={isSidebarLocked} // Status checked berdasarkan state isSidebarLocked
-                                 onChange={toggleSidebarLock} // Panggil toggleSidebarLock saat status berubah
-                                 className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out rounded-full border-gray-300 focus:ring-blue-500" // Styling dasar checkbox Tailwind
+                                 id="sidebar-lock-toggle"
+                                 checked={isSidebarLocked}
+                                 onChange={toggleSidebarLock}
+                                 className="sr-only"
                              />
-                             {/* Label untuk checkbox, klik pada label juga akan toggle checkbox */}
-                             {/* Label hanya terlihat saat sidebar expanded di desktop */}
-                             {/* {isSidebarExpanded && (
-                                  <label htmlFor="sidebar-lock-toggle" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
-                                      Lock
-                                  </label>
-                             )} */}
-                              {/* Opsi: Tampilkan ikon kunci saat collapsed desktop */}
-                             {!isSidebarExpanded && (
-                                  <label htmlFor="sidebar-lock-toggle" className="ml-2 cursor-pointer text-gray-600 hover:text-gray-800">
-                                      {isSidebarLocked ? <IconLock size={20} strokeWidth={1.5} /> : <IconLockOpen size={20} strokeWidth={1.5} />}
-                                  </label>
-                             )}
+                             {/* Label yang berfungsi sebagai area klik for toggle (ikon kunci) */}
+                             <label
+                                 htmlFor="sidebar-lock-toggle"
+                                 className="flex items-center cursor-pointer text-gray-600 hover:text-gray-800 shrink-0 px-2 py-1 rounded-md hover:bg-gray-200 transition-colors duration-200 mr-3"
+                             >
+                                 {isSidebarLocked ? <IconLock size={20} strokeWidth={1.5} /> : <IconLockOpen size={20} strokeWidth={1.5} />}
+                             </label>
                          </div>
                     )}
 
