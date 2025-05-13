@@ -2,14 +2,15 @@
 
 import { Link } from '@inertiajs/react';
 // --- IMPORT SEMUA IKON YANG AKAN DIGUNAKAN PADA NavLink DI SINI ---
-// import { IconDashboard, IconUsers, IconShield, IconList, IconUser, IconLogout } from '@tabler/icons-react'; // Contoh impor ikon
+// Import ikon seperti:
+// import { IconDashboard, IconUsers, IconShield, IconList, IconUser, IconLogout } from '@tabler/icons-react';
 
 export default function NavLink({
     active = false,
     className = '',
-    children, // Children diharapkan adalah teks label NavLink
-    isSidebarExpanded = true, // Prop dari parent (identik dengan isSidebarOpen)
-    // isMobile prop TIDAK diperlukan lagi di sini
+    children, // Teks label NavLink
+    isSidebarExpanded = true, // Prop dari parent (apakah sidebar expanded - mobile open / desktop expanded)
+    isMobile = false, // Prop dari parent (apakah di mode mobile)
     icon: IconComponent, // Prop untuk komponen ikon
     ...props
 }) {
@@ -25,36 +26,37 @@ export default function NavLink({
             bg-gray-200 /* Background saat aktif */
             text-gray-900 /* Warna teks saat aktif */
             font-semibold /* Bold saat aktif */
-        ` // Styling saat AKTIF
+        `
         : `
             text-gray-700 /* Warna teks saat TIDAK aktif */
             hover:bg-gray-200 /* Background saat hover/focus */
             hover:text-gray-900 /* Warna teks saat hover/focus */
             focus:bg-gray-200 focus:text-gray-900 /* State focus */
-        `; // Styling saat TIDAK Aktif
+        `;
 
-    // Tentukan apakah teks label harus terlihat (hanya terlihat saat sidebar Expanded/Terbuka)
-    const isTextVisible = isSidebarExpanded; // Teks hanya terlihat jika sidebar Expanded/Terbuka
+    // Menentukan apakah teks label harus terlihat
+    // Terlihat jika sidebar Expanded (mobile open ATAU desktop expanded)
+    const isTextVisible = isSidebarExpanded;
 
     return (
         <Link
             {...props}
-            className={`${baseClasses} ${colorClasses} ${className}`} // Gabungkan semua class
+            className={`${baseClasses} ${colorClasses} ${className}`}
         >
             {/* Render Ikon */}
             {IconComponent && (
-                // Margin kanan jika teks terlihat, atau auto margin jika teks tidak terlihat (collapsed)
-                <IconComponent size={20} strokeWidth={1.5} className={isTextVisible ? 'mr-3' : 'mx-auto'} />
+                // Margin kanan jika teks terlihat, atau auto margin di desktop collapsed untuk pusatkan ikon
+                <IconComponent size={20} strokeWidth={1.5} className={isTextVisible ? 'mr-3' : (!isMobile ? 'sm:mx-auto' : 'mr-3')} />
             )}
 
             {/* Render Teks Label (hanya jika isTextVisible true) */}
             {isTextVisible && (
-                 <span>{children}</span> // Children adalah teks label NavLink
+                 <span>{children}</span>
             )}
 
-            {/* Untuk aksesibilitas saat teks tersembunyi, tambahkan sr-only */}
-             {!isTextVisible && (
-                 <span className="sr-only">{children}</span> // Sembunyikan visual, ada untuk screen reader
+             {/* Untuk aksesibilitas saat teks tersembunyi di desktop, tambahkan sr-only */}
+             {!isTextVisible && !isMobile && (
+                 <span className="sr-only">{children}</span>
              )}
         </Link>
     );
