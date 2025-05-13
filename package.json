@@ -21,7 +21,7 @@
         "vite": "^6.0"
     },
     "dependencies": {
-        "@tabler/icons-react": "^3.28.0",
+        "@tabler/icons-react": "^3.31.0",
         "clsx": "^2.1.1",
         "react-select": "^5.9.0",
         "sweetalert2": "^11.15.10"

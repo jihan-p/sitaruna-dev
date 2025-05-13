@@ -3,13 +3,17 @@
 // Import komponen
 import ApplicationLogo from '@/components/atoms/ApplicationLogo';
 import Dropdown from '@/components/molecules/Dropdown';
-import NavLink from '@/components/atoms/NavLink'; // NavLink sudah dimodifikasi sebelumnya
-import ResponsiveNavLink from '@/components/atoms/ResponsiveNavLink'; // Digunakan untuk navigasi di sidebar mobile
+import NavLink from '@/components/atoms/NavLink'; // NavLink dimodifikasi untuk styling sidebar
+import ResponsiveNavLink from '@/components/atoms/ResponsiveNavLink'; // Digunakan untuk navigasi di sidebar mobile (atau bisa pakai NavLink)
 
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react'; // State untuk toggle sidebar mobile
-// Import ikon untuk tombol toggle sidebar mobile
-import { IconMenu2, IconX } from '@tabler/icons-react'; // Pastikan ikon dari @tabler/icons-react sudah terinstall dan diimpor
+import { useState } from 'react'; // Hanya perlu state untuk toggle sidebar
+// Import ikon
+import { IconMenu2, IconX } from '@tabler/icons-react'; // Ikon hamburger dan silang
+
+// --- IMPORT IKON YANG DIGUNAKAN PADA NavLink DI SINI ---
+// Anda perlu mengimpor semua ikon yang Anda pasang sebagai prop 'icon' pada NavLink
+import { IconDashboard, IconUsers, IconShield, IconList } from '@tabler/icons-react'; // <--- TAMBAHKAN ATAU UNCOMMENT BARIS INI
 
 // Utilitas untuk cek izin
 import hasAnyPermission from '@/utils/Permissions'; // Pastikan path ini benar
@@ -19,128 +23,152 @@ export default function AuthenticatedLayout({ header, children }) {
     // Mengambil data user yang sedang login dari props Inertia
     const user = usePage().props.auth.user;
 
-    // State untuk mengontrol tampilan sidebar di perangkat mobile
-    // Nama state ini awalnya dari dropdown navigasi horizontal, tapi kita gunakan untuk sidebar mobile
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    // State untuk toggle sidebar (digunakan di semua ukuran layar)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // Fungsi untuk men-toggle tampilan sidebar mobile
+    // Fungsi untuk men-toggle tampilan sidebar
     const toggleSidebar = () => {
-        setShowingNavigationDropdown((prevState) => !prevState);
+        setIsSidebarOpen((prevState) => !prevState);
     };
 
+    // Class untuk sidebar (sama di semua ukuran layar)
+    const sidebarClasses = `
+        fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-200 /* Border abu-abu muda */ flex flex-col h-screen overflow-y-auto transition-transform ease-in-out duration-300
+        /* Styling Warna Abu-abu Muda */
+        bg-gray-100 /* Warna latar belakang abu-abu muda */
+        text-gray-800 /* Warna teks default di sidebar */
+        /* Toggle buka/tutup berdasarkan state isSidebarOpen */
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+    `; // Lebar sidebar saat terbuka (misal w-64)
+
+
+    // Class untuk area konten utama (selalu mengambil sisa ruang, sidebar overlay)
+    const mainContentClasses = `
+        flex-1 flex flex-col p-6 overflow-y-auto /* padding standar konten & scroll */
+        /* Tidak ada margin kiri dinamis, sidebar overlay */
+    `;
+
+
     return (
-        // === Struktur Layout Utama: Flex Container ===
-        // Menggunakan flex untuk menata sidebar (kiri) dan konten utama (kanan) berdampingan
-        // min-h-screen membuat kontainer setinggi minimal viewport
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="flex min-h-screen bg-gray-100"> {/* Latar belakang halaman utama */}
 
             {/* === Sidebar Kiri === */}
-            {/* === INI BAGIAN KODE SIDEBAR YANG PERLU DIGANTI === */}
-            {/* Menggabungkan styling mobile (default) dan desktop (sm:...) */}
-            {/* fixed inset-y-0 left-0 z-50: Memasang sidebar di posisi tetap kiri (untuk mobile) */}
-            {/* w-64: Lebar saat terbuka di mobile */}
-            {/* transform -translate-x-full: Menyembunyikan sidebar ke kiri di mobile secara default */}
-            {/* transition-transform: Menambahkan animasi saat sidebar bergeser */}
-            {/* sm:translate-x-0: Meng-override di breakpoint 'sm' ke atas: sidebar selalu terlihat */}
-            {/* sm:relative: Meng-override positioning 'fixed' di breakpoint 'sm' ke atas */}
-            {/* sm:w-64: Mengatur lebar di breakpoint 'sm' ke atas */}
-            <div
-                className={`
-                    fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 flex flex-col h-screen overflow-y-auto transition-transform ease-in-out duration-300
-                    ${showingNavigationDropdown ? 'translate-x-0' : '-translate-x-full'} /* Menggeser sidebar masuk/keluar di mobile berdasarkan state */
-                    sm:translate-x-0 sm:relative sm:w-64 /* Membuat sidebar permanen di desktop */
-                `}
-            >
+            {/* Gunakan class dinamis yang sama di semua ukuran */}
+            <div className={sidebarClasses}>
 
                 {/* Bagian Header Sidebar (Logo/Nama Aplikasi) */}
-                <div className="flex shrink-0 items-center justify-between px-6 py-4 border-b border-gray-100">
-                    <Link href="/">
-                        <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                <div className="flex shrink-0 items-center px-4 py-4 border-b border-gray-200 justify-between"> {/* Border dan padding */}
+                    <Link href="/" className="flex items-center">
+                        {/* Logo: Class text-gray-800 untuk warna ikon agar terlihat di bg-gray-100 */}
+                        <ApplicationLogo className={`block h-9 w-auto fill-current text-gray-800 mr-3`} /> {/* Logo dan margin kanan */}
+                         <span className="text-xl font-semibold text-gray-800">SITARUNA</span> {/* Nama aplikasi selalu tampil saat sidebar terbuka */}
                     </Link>
-                    {/* Tombol Tutup Sidebar (Hanya di Mobile) */}
-                    <button
-                        onClick={toggleSidebar}
-                        className="sm:hidden p-1 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 ml-auto"
-                    >
-                         <IconX size={24} strokeWidth={1.5} />
-                    </button>
+
+                    {/* Tombol Tutup Sidebar (Tampil saat Sidebar Terbuka, di semua ukuran) */}
+                     {isSidebarOpen && (
+                         <button
+                             onClick={toggleSidebar} // Memanggil fungsi toggleSidebar
+                             className="p-1 rounded-md text-gray-600 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 ml-auto"
+                         >
+                              <IconX size={24} strokeWidth={1.5} />
+                         </button>
+                    )}
                 </div>
 
                 {/* Bagian Navigasi Sidebar */}
-                <nav className="flex flex-col flex-1 px-4 py-6 space-y-1">
-                    {/* Menggunakan komponen NavLink (untuk desktop) */}
-                    <NavLink href={route('dashboard')} active={route().current('dashboard')} className="block w-full py-2 px-3 rounded-md hover:bg-gray-100">
-                        Dashboard
-                    </NavLink>
-                    {hasAnyPermission(['roles index']) && <NavLink href={route('roles.index')} active={route().current('roles.index')} className="block w-full py-2 px-3 rounded-md hover:bg-gray-100">Roles</NavLink>}
-                    {hasAnyPermission(['permissions index']) && <NavLink href={route('permissions.index')} active={route().current('permissions.index')} className="block w-full py-2 px-3 rounded-md hover:bg-gray-100">Permissions</NavLink>}
-                    {hasAnyPermission(['users index']) && <NavLink href={route('users.index')} active={route().current('users.index')} className="block w-full py-2 px-3 rounded-md hover:bg-gray-100">Users</NavLink>}
-                    {/* Tambahkan NavLink lain */}
-                </nav>
+                <nav className="flex flex-col flex-1 px-2 py-4 space-y-1"> {/* Sesuaikan padding/space-y */}
+                    {/* Menggunakan komponen NavLink */}
+                    {/* isSidebarExpanded prop di NavLink sekarang akan menjadi 'isSidebarOpen' */}
 
-                {/* Optional: Bagian Bawah Sidebar Mobile (User Info / Logout) */}
-                {/* Anda bisa memindahkan bagian ini ke sini jika ingin info user ada di dalam sidebar mobile */}
-                {/* <div className="mt-auto border-t border-gray-100 p-4 sm:hidden"> ... ResponsiveNavLink ... </div> */}
+                    {/* Contoh NavLink Dashboard */}
+                    <NavLink
+                        href={route('dashboard')}
+                        active={route().current('dashboard')}
+                        isSidebarExpanded={isSidebarOpen} // Pass state isSidebarOpen
+                        // isMobile prop tidak diperlukan lagi di NavLink jika perilaku sama
+                        icon={IconDashboard} // Contoh prop ikon (pastikan IconDashboard diimpor di AuthenticatedLayout jika belum)
+                    >
+                        Dashboard {/* Children (teks label) */}
+                    </NavLink>
+
+                    {/* NavLink Roles */}
+                    {hasAnyPermission(['roles index']) &&
+                         <NavLink
+                            href={route('roles.index')}
+                            active={route().current('roles.index')}
+                            isSidebarExpanded={isSidebarOpen} // Pass state isSidebarOpen
+                            icon={IconUsers} // Contoh prop ikon (pastikan IconUsers diimpor di AuthenticatedLayout jika belum)
+                        >
+                            Roles
+                        </NavLink>
+                    }
+                    {/* Ulangi untuk Permissions, Users, dan NavLink lainnya */}
+                     {hasAnyPermission(['permissions index']) &&
+                         <NavLink href={route('permissions.index')} active={route().current('permissions.index')} isSidebarExpanded={isSidebarOpen} icon={IconShield} >Permissions</NavLink> // Pastikan IconShield diimpor
+                    }
+                     {hasAnyPermission(['users index']) &&
+                         <NavLink href={route('users.index')} active={route().current('users.index')} isSidebarExpanded={isSidebarOpen} icon={IconList} >Users</NavLink> // Pastikan IconList diimpor
+                    }
+
+
+                     {/* Opsi: Tautan Profil/Logout di Bawah Sidebar */}
+                     {/* Menggunakan NavLink juga dengan styling yang sesuai */}
+                     {/* <div className="mt-auto border-t border-gray-200 p-4">
+                         <NavLink href={route('profile.edit')} isSidebarExpanded={isSidebarOpen}>Profile</NavLink>
+                         <NavLink method="post" href={route('logout')} as="button" isSidebarExpanded={isSidebarOpen}>Log Out</NavLink>
+                     </div> */}
+
+                </nav>
 
             </div> {/* === Akhir Sidebar Kiri === */}
 
-            {/* === Overlay untuk Mobile Sidebar === */}
-            {/* Muncul saat sidebar terbuka di mobile, menutup saat diklik */}
-            {showingNavigationDropdown && (
+            {/* === Overlay === */}
+            {/* Muncul saat sidebar terbuka, menutup saat diklik (di semua ukuran) */}
+            {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black bg-opacity-25 sm:hidden"
+                    className="fixed inset-0 z-40 bg-black bg-opacity-25"
                     onClick={toggleSidebar} // Menutup sidebar saat overlay diklik
                 ></div>
             )}
 
 
-            {/* === Area Konten Utama (Kanan Sidebar) === */}
-            {/* flex-1 flex flex-col: Mengisi sisa ruang & menata vertikal */}
-            {/* sm:ml-64: Menambah margin kiri di desktop, sesuai lebar sidebar (sesuaikan jika lebar sidebar diubah) */}
-            <div className="flex-1 flex flex-col sm:ml-64"> {/* Sesuaikan sm:ml-64 jika lebar sidebar desktop diubah */}
+            {/* === Area Konten Utama === */}
+            {/* Gunakan class standar, tidak ada margin kiri khusus sidebar */}
+            <div className={mainContentClasses}>
 
                 {/* === Top Bar di Area Konten Utama (Header) === */}
-                {/* Mengandung Tombol Toggle Mobile, Judul Halaman, & Profil User */}
+                {/* Mengandung Tombol Toggle Sidebar, Judul Halaman, & Profil User */}
                 <header className="w-full bg-white shadow">
-                     <div className="flex justify-between items-center px-4 py-6 sm:px-6 lg:px-8">
+                     <div className="flex items-center px-4 py-6 sm:px-6 lg:px-8">
 
-                         {/* Tombol Buka Sidebar (Hanya di Mobile) */}
-                         {/* Ditempatkan di kiri top bar */}
-                        <div className="-ms-2 flex items-center sm:hidden">
-                            <button
-                                onClick={toggleSidebar} // Memanggil toggleSidebar untuk membuka sidebar
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                 <IconMenu2 size={24} strokeWidth={1.5} />
-                            </button>
-                        </div>
+                         {/* Tombol Buka/Tutup Sidebar (Tampil di semua ukuran) */}
+                         {/* Klik untuk memanggil toggleSidebar */}
+                         <button
+                            onClick={toggleSidebar}
+                            className="-ms-2 mr-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                         >
+                             {/* Ikon Hamburger */}
+                             <IconMenu2 size={24} strokeWidth={1.5} />
+                         </button>
 
-                        {/* Slot Header Halaman */}
+
+                        {/* Slot Header Halaman - Konten judul halaman */}
                          <div className="flex-1 px-2 sm:px-0">
                              {header}
                          </div>
 
-                        {/* Pengaturan Pengguna (Dropdown) */}
-                        {/* Tampil hanya di desktop */}
-                         <div className="hidden sm:flex sm:items-center">
+                        {/* Pengaturan Pengguna (Molekul Dropdown) */}
+                        {/* Tampil di semua ukuran */}
+                         <div className="ml-auto"> {/* Gunakan ml-auto untuk mendorong ke kanan */}
                              <Dropdown align="right" width="48">
-                                 <Dropdown.Trigger>
-                                     <span className="inline-flex rounded-md">
-                                         <button type="button" className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none">
-                                             {user.name}
-                                             <svg className="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-                                         </button>
-                                     </span>
-                                 </Dropdown.Trigger>
-                                 <Dropdown.Content>
-                                     <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
-                                     <Dropdown.Link href={route('logout')} method="post" as="button">Log Out</Dropdown.Link>
-                                 </Dropdown.Content>
+                                 {/* Trigger & Content Dropdown sama seperti sebelumnya */}
+                                  <Dropdown.Trigger> {/* ... */} </Dropdown.Trigger>
+                                  <Dropdown.Content> {/* ... */}</Dropdown.Content>
                              </Dropdown>
                          </div>
-                    </div>
-                </header>
+                    </div> {/* Akhir div flex items-center */}
+                </header> {/* === Akhir Top Bar Area Konten Utama === */}
+
 
                 {/* Slot Konten Utama Halaman */}
                 <main className="flex-1 p-6 overflow-y-auto">
@@ -149,35 +177,17 @@ export default function AuthenticatedLayout({ header, children }) {
 
             </div> {/* Akhir Area Konten Utama */}
 
-             {/* === Konten Navigasi Responsif (ResponsiveNavLink) === */}
-             {/* Struktur ini digunakan untuk menu yang muncul saat sidebar mobile terbuka */}
-             {/* Class 'sm:hidden' membuatnya hanya tampil di mobile */}
-             {/* State 'showingNavigationDropdown' mengontrol apakah block ini ditampilkan */}
-             <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
-                 <div className="space-y-1 pb-3 pt-2 border-b border-gray-200"> {/* Padding dan border bawah */}
-                     {/* NavLink Responsif (menggunakan ResponsiveNavLink.jsx) */}
-                     {/* Tambahkan ResponsiveNavLink untuk semua item navigasi (Dashboard, Roles, Permissions, Users, dll) */}
-                      <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Dashboard</ResponsiveNavLink>
-                       {hasAnyPermission(['roles index']) && <ResponsiveNavLink href={route('roles.index')} active={route().current('roles.index')}>Roles</ResponsiveNavLink>}
-                       {hasAnyPermission(['permissions index']) && <ResponsiveNavLink href={route('permissions.index')} active={route().current('permissions.index')}>Permissions</ResponsiveNavLink>}
-                       {hasAnyPermission(['users index']) && <ResponsiveNavLink href={route('users.index')} active={route().current('users.index')}>Users</ResponsiveNavLink>}
-                       {/* Tambahkan ResponsiveNavLink lain */}
-                 </div>
+            {/* Konten Navigasi Responsif Asli - DIHAPUS */}
+            {/* <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}> ... KODE LAMA DIHAPUS ... </div> */}
 
-                 {/* Pengaturan Pengguna Responsif (di dalam menu mobile) */}
-                 <div className="border-t border-gray-200 pb-1 pt-4">
-                     <div className="px-4">
-                          <div className="text-base font-medium text-gray-800">{user.name}</div>
-                          <div className="text-sm font-medium text-gray-500">{user.email}</div>
-                     </div>
-                     <div className="mt-3 space-y-1">
-                         {/* Link Profil dan Logout di menu mobile */}
-                         <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
-                         <ResponsiveNavLink method="post" href={route('logout')} as="button">Log Out</ResponsiveNavLink>
-                     </div>
-                 </div>
-             </div>
 
         </div> // === Akhir Struktur Layout Utama ===
     );
 }
+
+// --- Pastikan NavLink.jsx sudah diupdate seperti di balasan sebelumnya (styling dan prop isSidebarExpanded) ---
+// --- Pastikan ResponsiveNavLink.jsx juga diupdate warnanya jika masih digunakan (misal untuk Profile/Logout) ---
+// --- Pastikan ikon-ikon yang digunakan (IconMenu2, IconX, dan ikon di NavLink) diimpor di AuthenticatedLayout.jsx ---
+// Contoh import ikon (tambahkan di bagian import atas):
+// import { IconDashboard, IconUsers, IconShield, IconList } from '@tabler/icons-react'; // Ikon untuk NavLink
+// import { IconMenu2, IconX } from '@tabler/icons-react'; // Ikon untuk toggle
