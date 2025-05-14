@@ -275,7 +275,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                             <li><a href="#courses-section" className="nav-link">Courses</a></li>
                                             <li><a href="#programs-section" className="nav-link">Programs</a></li>
                                             <li><a href="#teachers-section" className="nav-link">Teachers</a></li>
-                                            {/* Add conditional rendering for authenticated user links if needed in main nav */}
+                                            <li><a href="#contact-section" className="nav-link">Kontak Kami</a></li>
                                         </ul>
                                     </nav>
                                 </div>
@@ -296,26 +296,16 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                                 </li>
                                             ) : (
                                                 <>
-                                                    <li>
+                                                    <li className="cta">
                                                         <Link
                                                             href={route('login')}
-                                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                                            className="nav-link"
                                                         >
-                                                            Log in
-                                                        </Link>
-                                                    </li>
-                                                    <li>
-                                                        <Link
-                                                            href={route('register')}
-                                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                                        >
-                                                            Register
+                                                            <span>Log in</span>
                                                         </Link>
                                                     </li>
                                                 </>
                                             )}
-                                            {/* Keeping Contact Us CTA as in original HTML */}
-                                             <li className="cta"><a href="#contact-section" className="nav-link"><span>Contact Us</span></a></li> {/* Anchor link for smooth scroll */}
 
                                         </ul>
                                     </nav>
