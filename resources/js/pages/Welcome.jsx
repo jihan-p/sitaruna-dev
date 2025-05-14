@@ -77,12 +77,17 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
     // --- Implement Sticky Header Logic ---
     useEffect(() => {
-        const header = document.querySelector('.site-navbar');
-        if (!header) return;
+        // const header = document.querySelector('.site-navbar');
+        const stickyWrapper = document.querySelector('.sticky-wrapper');
+        if (!stickyWrapper) return; // Ensure the sticky-wrapper exists
 
         // Function to handle the scroll event
         const handleScroll = () => {
             // Get the header's height to determine the scroll threshold
+            // Using stickyWrapper.offsetHeight might not be accurate for header height
+            // Let's still use the header to get its height
+            const header = document.querySelector('.site-navbar');
+            if (!header || !stickyWrapper) return; // Ensure both elements exist
             const headerHeight = header.offsetHeight;
 
             // Check if the user has scrolled past the header height
@@ -90,11 +95,11 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 // Add a class to make the header sticky (assuming 'is-sticky' or similar class exists in CSS)
                 // Check original CSS for exact class, but 'is-sticky' is common.
                 // The original template used a `.sticky-wrapper .is-sticky` pattern, targeting the sticky-wrapper.
-                // Let's target the header directly for simplicity in React component.
-                header.classList.add('is-sticky'); // Or whatever the correct sticky class is
+                // Let's target the stickyWrapper element now as per template structure.
+                stickyWrapper.classList.add('is-sticky'); // Add class to the wrapper
             } else {
                 // Remove the class if scrolled back up
-                header.classList.remove('is-sticky');
+                stickyWrapper.classList.remove('is-sticky'); // Remove class from the wrapper
             }
         };
 
@@ -220,7 +225,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
     return (
         <>
             <Head>
-                <title>OneSchool &mdash; Website by Colorlib</title>
+                <title>SMK Negeri 2 Subang - Stempert</title>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
@@ -254,71 +259,73 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 </div>
 
                 {/* Header */}
-                <header className="site-navbar py-4 js-sticky-header site-navbar-target" role="banner">
-                    <div className="container-fluid">
-                        <div className="d-flex align-items-center">
-                            <div className="site-logo mr-auto w-25">
-                                <a href="index.html">OneSchool</a> {/* Consider using Inertia Link if this navigates within the app */}
-                            </div>
+                <div className="sticky-wrapper">
+                    <header className="site-navbar py-4 js-sticky-header site-navbar-target" role="banner">
+                        <div className="container-fluid">
+                            <div className="d-flex align-items-center">
+                                <div className="site-logo mr-auto w-25">
+                                    <Link href="/">SMK Negeri 2 Subang</Link> {/* Using Inertia Link to stay within the SPA */}
+                                </div>
 
-                            {/* Desktop Navigation */}
-                            <div className="mx-auto text-center">
-                                <nav className="site-navigation position-relative text-right" role="navigation">
-                                    <ul className="site-menu main-menu js-clone-nav mx-auto d-none d-lg-block m-0 p-0">
-                                        <li><a href="#home-section" className="nav-link">Home</a></li>
-                                        <li><a href="#courses-section" className="nav-link">Courses</a></li>
-                                        <li><a href="#programs-section" className="nav-link">Programs</a></li>
-                                        <li><a href="#teachers-section" className="nav-link">Teachers</a></li>
-                                        {/* Add conditional rendering for authenticated user links if needed in main nav */}
-                                    </ul>
-                                </nav>
-                            </div>
+                                {/* Desktop Navigation */}
+                                <div className="mx-auto text-center">
+                                    <nav className="site-navigation position-relative text-right" role="navigation">
+                                        <ul className="site-menu main-menu js-clone-nav mx-auto d-none d-lg-block m-0 p-0">
+                                            <li><a href="#home-section" className="nav-link">Home</a></li>
+                                            <li><a href="#courses-section" className="nav-link">Courses</a></li>
+                                            <li><a href="#programs-section" className="nav-link">Programs</a></li>
+                                            <li><a href="#teachers-section" className="nav-link">Teachers</a></li>
+                                            {/* Add conditional rendering for authenticated user links if needed in main nav */}
+                                        </ul>
+                                    </nav>
+                                </div>
 
-                            {/* Auth Links / Contact Us */}
-                            <div className="ml-auto w-25">
-                                <nav className="site-navigation position-relative text-right" role="navigation">
-                                    <ul className="site-menu main-menu site-menu-dark js-clone-nav mr-auto d-none d-lg-block m-0 p-0">
-                                        {auth.user ? (
-                                            <li>
-                                                 {/* Link to Dashboard for authenticated users */}
-                                                <Link
-                                                    href={route('dashboard')}
-                                                    className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                                >
-                                                    Dashboard
-                                                </Link>
-                                            </li>
-                                        ) : (
-                                            <>
+                                {/* Auth Links / Contact Us */}
+                                <div className="ml-auto w-25">
+                                    <nav className="site-navigation position-relative text-right" role="navigation">
+                                        <ul className="site-menu main-menu site-menu-dark js-clone-nav mr-auto d-none d-lg-block m-0 p-0">
+                                            {auth.user ? (
                                                 <li>
+                                                     {/* Link to Dashboard for authenticated users */}
                                                     <Link
-                                                        href={route('login')}
+                                                        href={route('dashboard')}
                                                         className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                                                     >
-                                                        Log in
+                                                        Dashboard
                                                     </Link>
                                                 </li>
-                                                <li>
-                                                    <Link
-                                                        href={route('register')}
-                                                        className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                                    >
-                                                        Register
-                                                    </Link>
-                                                </li>
-                                            </>
-                                        )}
-                                        {/* Keeping Contact Us CTA as in original HTML */}
-                                         <li className="cta"><a href="#contact-section" className="nav-link"><span>Contact Us</span></a></li> {/* Anchor link for smooth scroll */}
+                                            ) : (
+                                                <>
+                                                    <li>
+                                                        <Link
+                                                            href={route('login')}
+                                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                                        >
+                                                            Log in
+                                                        </Link>
+                                                    </li>
+                                                    <li>
+                                                        <Link
+                                                            href={route('register')}
+                                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                                        >
+                                                            Register
+                                                        </Link>
+                                                    </li>
+                                                </>
+                                            )}
+                                            {/* Keeping Contact Us CTA as in original HTML */}
+                                             <li className="cta"><a href="#contact-section" className="nav-link"><span>Contact Us</span></a></li> {/* Anchor link for smooth scroll */}
 
-                                    </ul>
-                                </nav>
-                                {/* Mobile menu toggle button */}
-                                <a href="#" className="d-inline-block d-lg-none site-menu-toggle js-menu-toggle text-black float-right" onClick={toggleMobileMenu}><span className="icon-menu h3"></span></a>
+                                        </ul>
+                                    </nav>
+                                    {/* Mobile menu toggle button */}
+                                    <a href="#" className="d-inline-block d-lg-none site-menu-toggle js-menu-toggle text-black float-right" onClick={toggleMobileMenu}><span className="icon-menu h3"></span></a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </header>
+                    </header>
+                </div>
 
                 {/* Intro Section (Home) */}
                 <div className="intro-section" id="home-section">
