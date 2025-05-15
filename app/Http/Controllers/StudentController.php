@@ -140,7 +140,7 @@ class StudentController extends Controller implements HasMiddleware
             'no_hp' => 'nullable|string|max:50',
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('students', 'email')->ignore($student->id)],
             'alamat' => 'nullable|string',
-            'status_akun' => ['nullable', 'string', Rule::in(['Aktif', 'Nonaktif', 'Lulus', 'Keluar', 'Mutasi'])],
+            'status_akun' => ['required', 'string', Rule::in(['Aktif', 'Nonaktif', 'Lulus', 'Mutasi', 'Keluar'])],
             // Foto Profil: Aturan validasi sama, nullable image
             'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);

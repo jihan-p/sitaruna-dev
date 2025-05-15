@@ -247,6 +247,7 @@ export default function Edit({auth}) {
                                     errors.status_akun ? 'border-red-500' : ''
                                 }`}
                             >
+                                <option value="">Pilih Status Akun</option>
                                 <option value="Aktif">Aktif</option>
                                 <option value="Nonaktif">Nonaktif</option>
                                 <option value="Lulus">Lulus</option>
