@@ -1,5 +1,3 @@
-// resources/js/Pages/Students/Edit.jsx
-
 import React from 'react';
 // Import komponen DatePicker dan CSS-nya
 import DatePicker from 'react-datepicker';
@@ -30,7 +28,6 @@ import CancelButton from '@/components/molecules/CancelButton'; // === Pastikan 
 // Pastikan baris import ini TIDAK dikomentari jika Anda menggunakan hasAnyPermission
 // import hasAnyPermission from '@/utils/Permissions'; // === Sesuaikan path import ini jika berbeda ===
 
-
 export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
 
     // Ambil data 'student' yang dikirim dari controller StudentController@edit melalui props Inertia
@@ -40,7 +37,7 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
 
     // Gunakan useForm hook Inertia untuk manajemen state form dan submit
     // === Inisialisasi state form dengan nilai data student yang ada ===
-    const { data, setData, post, errors, processing, reset } = useForm({ // Tambah reset jika perlu untuk mereset form state
+    const { data, setData, post, errors, processing, reset } = useForm({
         // Isi state dengan data siswa yang diterima dari props 'student'
         // Gunakan || '' untuk nilai string kosong, || null untuk tanggal kosong/file upload
         nisn: student.nisn || '',
@@ -69,7 +66,6 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
     // Definisikan nama resource route
     const routeResourceName = 'students'; // Sesuai dengan prefix route resource di web.php
 
-
     // Handler saat form disubmit untuk update data
     const handleUpdateData = async (e) => {
         e.preventDefault();
@@ -78,7 +74,7 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
         // Menggunakan post() dari useForm karena Inertia dengan metode _method: 'put'/'patch' bisa mengirim FormData (untuk file upload)
         // FormData secara otomatis dibuat oleh useForm jika ada file (foto_profil di state tidak null)
         // Route update memerlukan ID siswa yang akan diupdate
-        post(route(`${routeResourceName}.update`, student.id), { // Link ke route 'students.update' dengan ID student
+        post(route(`${routeResourceName}.update`, student.id), {
              // Opsional: konfigurasi tambahan seperti onSuccess, onError, etc.
              onSuccess: () => {
                  console.log("Data siswa berhasil diperbarui!");
@@ -221,7 +217,6 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
                                 onChange={(date) => {
                                     // 'date' adalah objek Date yang dipilih
                                     // Konversi objek Date kembali ke format YYYY-MM-DD (string) untuk state useForm
-                                    // Gunakan toISOString() lalu ambil bagian tanggalnya (split('T')[0])
                                     const formattedDateForState = date ? date.toISOString().split('T')[0] : null;
                                     setData('tanggal_lahir', formattedDateForState); // Update state useForm
                                 }}
@@ -235,11 +230,9 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
                                 isClearable // Memungkinkan pengguna menghapus tanggal yang dipilih
                                 showYearDropdown // Menampilkan dropdown untuk memilih tahun
                                 scrollableYearDropdown // Membuat dropdown tahun bisa di-scroll
-                                yearDropdownItemNumber={15} // Jumlah tahun yang ditampilkan di dropdown (misal 15 tahun ke belakang/depan)
+                                yearDropdownItemNumber={15} // Jumlah tahun yang ditampilkan di dropdown
                                 // Tambahkan props lain sesuai kebutuhan dari dokumentasi react-datepicker
                             />
-                             {/* Tampilkan pesan error validasi jika ada */}
-                            {errors.tanggal_lahir && <div className="text-red-500 text-sm mt-1">{errors.tanggal_lahir}</div>}
                         </FormGroup>
                         {/* ============================================================== */}
 
@@ -253,10 +246,8 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
                                  value={data.agama}
                                  onChange={e => setData('agama', e.target.value)}
                                  placeholder="Input agama.."
-                                 className="mt-1 block w-full capitalize" // Kelas styling Anda, tambahkan 'capitalize'
+                                 className="mt-1 block w-full capitalize" // Kelas styling Anda
                              />
-                              {/* Tampilkan pesan error validasi jika ada */}
-                            {errors.agama && <div className="text-red-500 text-sm mt-1">{errors.agama}</div>}
                          </FormGroup>
                          {/* ============================= */}
 
@@ -271,8 +262,6 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
                                  placeholder="Input nomor HP.."
                                  className="mt-1 block w-full" // Kelas styling Anda
                              />
-                              {/* Tampilkan pesan error validasi jika ada */}
-                            {errors.no_hp && <div className="text-red-500 text-sm mt-1">{errors.no_hp}</div>}
                          </FormGroup>
                          {/* ============================== */}
 
@@ -288,14 +277,11 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
                                 placeholder="Input email.."
                                 className="mt-1 block w-full lowercase" // Kelas styling Anda
                             />
-                             {/* Tampilkan pesan error validasi jika ada */}
-                            {errors.email && <div className="text-red-500 text-sm mt-1">{errors.email}</div>}
                         </FormGroup>
 
-                         {/* Input Alamat (menggunakan TextArea) */}
+                         {/* Input Alamat (Sebaiknya pakai TextAreaInput jika punya) */}
                          <FormGroup label={'Alamat'} error={errors.alamat}>
-                            {/* === Ganti TextInput atau input type="text" dengan <textarea> === */}
-                            {/* Jika Anda punya komponen TextAreaInput kustom, impor dan gunakan itu */}
+                            {/* Jika Anda punya komponen TextAreaInput: */}
                             {/*
                             <TextAreaInput
                                 id="alamat"
@@ -303,12 +289,11 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
                                 value={data.alamat}
                                 onChange={e => setData('alamat', e.target.value)}
                                 placeholder="Input alamat.."
-                                className="mt-1 block w-full" // Kelas styling
-                                rows={3} // Tentukan jumlah baris default
+                                className="mt-1 block w-full" // Kelas styling Anda
                             />
                             */}
-                             {/* Jika tidak ada TextAreaInput, gunakan elemen <textarea> standar */}
-                              <textarea
+                             {/* Jika tidak ada TextAreaInput, pakai TextInput type="text" dan beri styling untuk tinggi (opsional) */}
+                             <textarea
                                 id="alamat"
                                 name="alamat"
                                 // Textarea tidak menggunakan prop 'type'
@@ -324,9 +309,7 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
                             >
                                 {/* Penting: Jangan letakkan children di dalam tag <textarea> jika Anda menggunakan prop 'value' */}
                             </textarea>
-                            {/* Tampilkan pesan error validasi jika ada */}
-                            {errors.alamat && <div className="text-red-500 text-sm mt-1">{errors.alamat}</div>}
-                        </FormGroup>
+                         </FormGroup>
 
 
                          {/* Input Status Akun (menggunakan elemen <select> standar) */}
@@ -373,106 +356,66 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
 
 
                          {/* Input Foto Profil (pakai type="file") */}
-                         {/* Grup form untuk label, input, dan error */}
                          <FormGroup label={'Foto Profil'} error={errors.foto_profil}>
-                            {/* Input file itu sendiri */}
+                            {/* Input type file seringkali tidak pakai komponen custom yang kompleks */}
                             <input
                                 id="foto_profil"
-                                name="foto_profil" // Nama ini harus sama dengan nama field di backend (request)
-                                type={'file'} // Tipe input untuk memilih file
-                                // Handler saat user memilih file
-                                // Mengambil file pertama yang dipilih (e.target.files[0]) atau null jika dibatalkan
+                                name="foto_profil" // Penting: nama input file
+                                type={'file'}
+                                // Set state foto_profil dengan file object saat user memilih file
+                                // Jika user membatalkan, e.target.files bisa null/empty
                                 onChange={e => setData('foto_profil', e.target.files && e.target.files.length > 0 ? e.target.files[0] : null)}
-                                // Kelas styling untuk input file (contoh Tailwind)
                                 className={`mt-1 block w-full text-sm text-gray-500
                                     file:mr-4 file:py-2 file:px-4
                                     file:rounded-full file:border-0
                                     file:text-sm file:font-semibold
                                     file:bg-blue-50 file:text-blue-700
                                     hover:file:bg-blue-100
-                                    ${errors.foto_profil ? 'border-red-500' : ''} /* Menambahkan border merah jika ada error */
-                                `}
+                                    ${errors.foto_profil ? 'border-red-500' : ''}
+                                `} // Contoh styling file input dengan Tailwind
                             />
-
-                            {/* === Logika untuk menampilkan preview gambar === */}
-
-                            {/* Kondisi 1: Tampilkan foto yang sudah ada jika belum ada file baru dipilih */}
-                            {/* student.foto_profil adalah URL/path foto dari database */}
-                            {/* data.foto_profil === null berarti user belum memilih file baru di form */}
+                            {/* === Tampilkan preview gambar yang sudah ada ATAU preview file baru jika dipilih === */}
+                            {/* Cek apakah ada foto_profil lama dari DB (student.foto_profil) DAN belum ada file baru dipilih di form (data.foto_profil masih null) */}
                             {student.foto_profil && data.foto_profil === null && (
-                                 // Tag <img> untuk menampilkan gambar yang sudah ada
-                                 <img
-                                     // URL gambar, pastikan path '/storage/' benar untuk akses file publik
-                                     src={`/storage/${student.foto_profil}`} // === Sesuaikan path ini jika cara akses file storage Anda berbeda ===
-                                     alt="Existing Photo" // Teks alternatif
-                                     // === KELAS STYLING GAMBAR ===
-                                     // Kelas-kelas ini mengontrol ukuran, aspek rasio, dan bentuk gambar
-                                    //  className="mt-2 h-20 w-auto object-cover rounded shadow" // <== KELAS YANG DIHARAPKAN MEMBUAT GAMBAR KECIL
-                                     className="mt-2 w-full max-w-sm md:max-w-xs lg:max-w-sm h-auto rounded-md shadow"
-                                     // Jika gambar terlihat terlalu besar, gunakan Developer Tools untuk cek style yang diterapkan!
-                                     // ----------------------------
-                                 />
+                                 // Pastikan URL storage benar. '/storage/' adalah default Laravel untuk symlink.
+                                 <img src={`/storage/${student.foto_profil}`} alt="Existing Photo" className="mt-2 h-20 w-auto object-cover rounded" />
                             )}
-
-                            {/* Kondisi 2: Tampilkan preview foto BARU jika user sudah memilih file */}
+                            {/* Cek apakah state data.foto_profil berisi objek File (berarti sudah pilih file baru) */}
                             {data.foto_profil instanceof File && (
-                                 // Tag <img> untuk menampilkan preview file yang baru dipilih
-                                 // URL.createObjectURL() membuat URL sementara untuk file lokal di browser
-                                 <img
-                                     src={URL.createObjectURL(data.foto_profil)} // URL sementara untuk preview
-                                     alt="New Photo Preview" // Teks alternatif
-                                     // === Gunakan kelas styling yang konsisten dengan gambar existing ===
-                                     className="mt-2 h-20 w-auto object-cover rounded shadow" // <== Terapkan kelas styling yang sama
-                                     // ---------------------------------------------
-                                 />
+                                 <img src={URL.createObjectURL(data.foto_profil)} alt="New Photo Preview" className="mt-2 h-20 w-auto object-cover rounded" />
                             )}
-
                             {/* Tampilkan pesan error validasi jika ada */}
                             {errors.foto_profil && <div className="text-red-500 text-sm mt-1">{errors.foto_profil}</div>}
 
-                            {/* === Opsional: Tambahkan checkbox/tombol untuk explicit menghapus foto yang sudah ada === */}
+                            {/* Opsional: Tambahkan checkbox/tombol untuk explicit menghapus foto yang sudah ada */}
                             {/* Ini memerlukan penyesuaian logic di controller update() untuk mendeteksi request hapus foto */}
-                             {/* Tampilkan checkbox hanya jika ada foto lama (student.foto_profil) DAN belum ada file baru dipilih (data.foto_profil === null) */}
-                             {/* Jika Anda ingin mengaktifkan fitur ini, Anda juga perlu:
-                                 1. Tambahkan `clear_photo: false,` ke state useForm.
-                                 2. Tambahkan penanganan untuk field `clear_photo` di metode `update()` di StudentController.php
-                                    (misal: jika `clear_photo` true, hapus file foto lama dan set kolom `foto_profil` di DB menjadi null).
-                             */}
-                             {/* {student.foto_profil && data.foto_profil === null && (
+                             {/* {student.foto_profil && !data.foto_profil && ( // Tampilkan hanya jika ada foto lama dan belum ada file baru dipilih
                                  <div className="mt-2">
                                      <label className="inline-flex items-center">
-                                         <input
-                                             type="checkbox"
-                                             className="form-checkbox rounded text-blue-600" // Kelas styling checkbox
-                                             onChange={e => setData('clear_photo', e.target.checked)} // Update state useForm
-                                             // Tidak perlu 'checked' prop di sini, state 'clear_photo' yang akan mengontrolnya jika ditambahkan
-                                         />
+                                         <input type="checkbox" className="form-checkbox" onChange={e => setData('clear_photo', e.target.checked)} />
                                          <span className="ml-2 text-sm text-gray-600">Hapus Foto yang Ada</span>
                                      </label>
                                  </div>
                              )} */}
-                             {/* ================================================================================= */}
+                             {/* Pastikan field 'clear_photo' ditambahkan ke state useForm jika Anda menggunakannya */}
 
-                        </FormGroup>
+                         </FormGroup>
+                         {/* ============================================= */}
 
 
                         {/* ==== END INPUT FIELDS ==== */}
 
 
                         {/* Tombol Submit dan Cancel */}
-                        <div className='flex items-center gap-2 mt-4'> {/* Tambahkan margin atas */}
+                        <div className={'flex items-center gap-2 mt-4'}> {/* Tambahkan margin atas */}
                             {/* Tombol submit form update */}
                             <PrimaryButton type={'submit'} disabled={processing}> Simpan Perubahan </PrimaryButton>
                             {/* Tombol kembali ke halaman index siswa */}
-                            <Link href={route(`${routeResourceName}.index`)} className="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-800 uppercase tracking-widest hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Kembali
-                            </Link>
-                             {/* Jika Anda menggunakan komponen CancelButton, ganti Link di atas */}
-                            {/* <CancelButton url={route(`${routeResourceName}.index`)}> Kembali </CancelButton> */}
+                            <CancelButton url={route(`${routeResourceName}.index`)}> Kembali </CancelButton>
                         </div>
                     </form>
                 </Card>
             </Container>
         </AuthenticatedLayout>
     );
-}
+} 
