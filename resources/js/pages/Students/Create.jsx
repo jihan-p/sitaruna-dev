@@ -1,6 +1,9 @@
 // resources/js/Pages/Students/Create.jsx
 
 import React from 'react';
+// Import komponen DatePicker dan CSS-nya
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css'; // Import file CSS DatePicker
 import AuthenticatedLayout from '@/templates/AuthenticatedLayout'; // Pastikan path import ini benar
 import Container from '@/components/atoms/Container'; // Pastikan path import ini benar
 import { Head, useForm, usePage } from '@inertiajs/react';
@@ -140,16 +143,38 @@ export default function Create({auth}) {
                         </FormGroup>
                         {/* ============================================ */}
 
-                        {/* Contoh Input Tanggal Lahir (pakai type="date") */}
-                         <FormGroup label={'Tanggal Lahir'} error={errors.tanggal_lahir}>
-                            <TextInput
-                                id="tanggal_lahir"
-                                name="tanggal_lahir"
-                                type={'date'} // Penting untuk input tanggal
-                                value={data.tanggal_lahir}
-                                onChange={e => setData('tanggal_lahir', e.target.value)}
+                        {/* === GANTI BLOK INPUT TANGGAL LAHIR INI DENGAN DatePicker === */}
+                        <FormGroup label={'Tanggal Lahir'} error={errors.tanggal_lahir}>
+                            {/* Ganti elemen input Anda dengan komponen DatePicker */}
+                            <DatePicker
+                                id="tanggal_lahir" // Tetap beri ID jika Anda menggunakannya (misal untuk label)
+                                // name="tanggal_lahir" // Atribut name tidak selalu diperlukan oleh DatePicker jika pakai useForm
+                                // Value yang diterima oleh 'selected' DatePicker adalah objek Date
+                                // Konversi string tanggal_lahir (YYYY-MM-DD atau null) dari state useForm menjadi objek Date
+                                selected={data.tanggal_lahir ? new Date(data.tanggal_lahir) : null}
+                                // Callback saat tanggal dipilih
+                                onChange={(date) => {
+                                    // 'date' adalah objek Date yang dipilih oleh pengguna
+                                    // Konversi objek Date kembali ke format YYYY-MM-DD (string) untuk state useForm
+                                    // Gunakan toISOString() lalu ambil bagian tanggalnya (split('T')[0])
+                                    const formattedDateForState = date ? date.toISOString().split('T')[0] : null;
+                                    setData('tanggal_lahir', formattedDateForState); // Update state useForm
+                                }}
+                                // === Konfigurasi Format Tampilan ===
+                                dateFormat="dd/MM/yyyy" // Format tampilan yang Anda inginkan
+                                // === Konfigurasi Lain (Opsional) ===
+                                className={`border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm mt-1 block w-full ${
+                                    errors.tanggal_lahir ? 'border-red-500' : ''
+                                }`} // Terapkan class styling Anda
+                                placeholderText="dd/mm/yyyy" // Teks placeholder
+                                isClearable // Memungkinkan pengguna menghapus tanggal yang dipilih
+                                showYearDropdown // Menampilkan dropdown untuk memilih tahun
+                                scrollableYearDropdown // Membuat dropdown tahun bisa di-scroll
+                                yearDropdownItemNumber={15} // Jumlah tahun yang ditampilkan di dropdown
+                                // Tambahkan props lain sesuai kebutuhan dari dokumentasi react-datepicker
                             />
                         </FormGroup>
+                        {/* ============================================================== */}
 
                          {/* Contoh Input Email */}
                          <FormGroup label={'Email'} error={errors.email}>
