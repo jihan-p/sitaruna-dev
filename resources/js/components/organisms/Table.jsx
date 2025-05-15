@@ -23,7 +23,19 @@ const Table = ({ children }) => {
 const Thead = ({ className, children }) => {
     return (
         <thead className={`${className} border-b bg-gray-50`}>
-            {React.Children.toArray(children)}
+            {/* Filter whitespace text nodes from tr children */}
+            {React.Children.map(children, child => {
+                if (React.isValidElement(child) && child.type === 'tr') {
+                    // If the child is a tr, filter its children (th elements)
+                    const filteredTrChildren = React.Children.toArray(child.props.children).filter(trChild =>
+                        typeof trChild !== 'string' || trChild.trim() !== ''
+                    );
+                    // Clone the tr element with the filtered children
+                    return React.cloneElement(child, {}, filteredTrChildren);
+                }
+                // Otherwise, return the child as is (should ideally be only tr)
+                return child;
+            }).filter(child => typeof child !== 'string' || child.trim() !== '')}
         </thead>
     );
 };
@@ -31,7 +43,19 @@ const Thead = ({ className, children }) => {
 const Tbody = ({ className, children }) => {
     return (
         <tbody className={`${className} divide-y bg-white`}>
-            {children}
+            {/* Filter whitespace text nodes from tr children */}
+            {React.Children.map(children, child => {
+                if (React.isValidElement(child) && child.type === 'tr') {
+                    // If the child is a tr, filter its children (td elements)
+                    const filteredTrChildren = React.Children.toArray(child.props.children).filter(trChild =>
+                        typeof trChild !== 'string' || trChild.trim() !== ''
+                    );
+                    // Clone the tr element with the filtered children
+                    return React.cloneElement(child, {}, filteredTrChildren);
+                }
+                // Otherwise, return the child as is
+                return child;
+            }).filter(child => typeof child !== 'string' || child.trim() !== '')}
         </tbody>
     );
 };

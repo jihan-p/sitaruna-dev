@@ -119,26 +119,40 @@ export default function Edit({auth}) {
                             />
                         </FormGroup>
 
-                        {/* Contoh Input Jenis Kelamin (Sebaiknya pakai Select Input) */}
-                         <FormGroup label={'Jenis Kelamin'} error={errors.jenis_kelamin}>
-                             {/* Jika Anda punya komponen SelectInput: */}
-                            {/* <SelectInput
+                        {/* === GANTI BLOK INPUT JENIS KELAMIN INI === */}
+                        <FormGroup label={'Jenis Kelamin'} error={errors.jenis_kelamin}>
+                            {/* Jika Anda punya komponen SelectInput kustom, gunakan ini */}
+                            {/*
+                            <SelectInput
                                 id="jenis_kelamin"
                                 name="jenis_kelamin"
                                 value={data.jenis_kelamin}
                                 onChange={e => setData('jenis_kelamin', e.target.value)}
-                                options={[{value: 'L', label: 'Laki-laki'}, {value: 'P', label: 'Perempuan'}]} // Contoh opsi statis
-                            /> */}
-                             {/* Jika tidak ada SelectInput, pakai TextInput sederhana dulu */}
-                             <TextInput
-                                id="jenis_kelamin"
-                                name="jenis_kelamin"
-                                type={'text'} // Ganti type jika pakai select
-                                value={data.jenis_kelamin}
-                                onChange={e => setData('jenis_kelamin', e.target.value)}
-                                placeholder="Input L/P.."
+                                options={[
+                                    { value: '', label: 'Pilih Jenis Kelamin' }, // Opsi kosong untuk placeholder
+                                    { value: 'L', label: 'Laki-laki' },
+                                    { value: 'P', label: 'Perempuan' },
+                                ]}
                             />
+                            */}
+                            {/* Jika belum punya komponen SelectInput kustom, gunakan elemen <select> standar */}
+                            <select
+                                id="jenis_kelamin"
+                                name="jenis_kelamin"
+                                value={data.jenis_kelamin}
+                                onChange={e => setData('jenis_kelamin', e.target.value)}
+                                className={`border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm mt-1 block w-full ${
+                                    errors.jenis_kelamin ? 'border-red-500' : ''
+                                }`}
+                            >
+                                <option value="">Pilih Jenis Kelamin</option> {/* Opsi kosong */}
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                            {/* Optional: Tampilkan pesan error di bawah select jika perlu */}
+                            {errors.jenis_kelamin && <div className="text-red-500 text-sm mt-1">{errors.jenis_kelamin}</div>}
                         </FormGroup>
+                        {/* ============================================ */}
 
                         {/* Contoh Input Tanggal Lahir (pakai type="date") */}
                          <FormGroup label={'Tanggal Lahir'} error={errors.tanggal_lahir}>
@@ -204,6 +218,45 @@ export default function Edit({auth}) {
                             {/* Opsional: Tambahkan checkbox/tombol untuk menghapus foto yang sudah ada */}
                              {/* <label className="ml-2"><input type="checkbox" onChange={e => setData('clear_photo', e.target.checked)} /> Hapus Foto</label> */}
                         </FormGroup>
+
+                        {/* === TAMBAHKAN BLOK INPUT STATUS AKUN INI === */}
+                        <FormGroup label={'Status Akun'} error={errors.status_akun}>
+                            {/* Jika Anda punya komponen SelectInput kustom, gunakan ini */}
+                            {/*
+                            <SelectInput
+                                id="status_akun"
+                                name="status_akun"
+                                value={data.status_akun}
+                                onChange={e => setData('status_akun', e.target.value)}
+                                options={[
+                                    { value: 'Aktif', label: 'Aktif' },
+                                    { value: 'Nonaktif', label: 'Nonaktif' },
+                                    { value: 'Lulus', label: 'Lulus' },
+                                    { value: 'Keluar', label: 'Keluar' },
+                                    { value: 'Mutasi', label: 'Mutasi' },
+                                ]}
+                            />
+                            */}
+                            {/* Jika belum punya komponen SelectInput kustom, gunakan elemen <select> standar */}
+                            <select
+                                id="status_akun"
+                                name="status_akun"
+                                value={data.status_akun}
+                                onChange={e => setData('status_akun', e.target.value)}
+                                className={`border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm mt-1 block w-full ${
+                                    errors.status_akun ? 'border-red-500' : ''
+                                }`}
+                            >
+                                <option value="Aktif">Aktif</option>
+                                <option value="Nonaktif">Nonaktif</option>
+                                <option value="Lulus">Lulus</option>
+                                <option value="Keluar">Keluar</option>
+                                <option value="Mutasi">Mutasi</option>
+                            </select>
+                            {/* Optional: Tampilkan pesan error di bawah select jika perlu */}
+                            {errors.status_akun && <div className="text-red-500 text-sm mt-1">{errors.status_akun}</div>}
+                        </FormGroup>
+                        {/* ============================================ */}
 
 
                         {/* ... Tambahkan input fields lainnya untuk:

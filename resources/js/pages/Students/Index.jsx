@@ -27,10 +27,10 @@ export default function Index({auth}) {
         <AuthenticatedLayout
             user={auth.user}
             // Header halaman ini
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Data Peserta Didik</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Peserta Didik</h2>}
         >
             {/* Set title halaman di browser tab */}
-            <Head title={'Data Peserta Didik'}/>
+            <Head title={'Peserta Didik'}/>
 
             {/* Container untuk konten utama */}
             <Container>
@@ -63,7 +63,7 @@ export default function Index({auth}) {
                                 <Table.Th>NIT</Table.Th>
                                 <Table.Th>Nama Lengkap</Table.Th>
                                 <Table.Th>Jenis Kelamin</Table.Th>
-                                <Table.Th>Status Akun</Table.Th>
+                                <Table.Th>Status</Table.Th>
                                 <Table.Th className='text-right'>Aksi</Table.Th> {/* Kolom Aksi (Edit, Delete) */}
                             </tr>
                         </Table.Thead>
@@ -75,13 +75,7 @@ export default function Index({auth}) {
                                 students.data.map((student) => (
                                     <tr key={student.id}> {/* Gunakan student.id sebagai key unik untuk setiap baris */}
                                         {/* Tampilkan data di setiap kolom sesuai header */}
-                                        <Table.Td>{student.nisn}</Table.Td>
-                                        <Table.Td>{student.nit}</Table.Td>
-                                        <Table.Td>{student.nama_lengkap}</Table.Td>
-                                        <Table.Td>{student.jenis_kelamin}</Table.Td>
-                                        <Table.Td>{student.status_akun}</Table.Td>
-                                        {/* Kolom Aksi */}
-                                        <Table.Td className='text-right'>
+                                        <Table.Td>{student.nisn}</Table.Td><Table.Td>{student.nit}</Table.Td><Table.Td>{student.nama_lengkap}</Table.Td><Table.Td>{student.jenis_kelamin}</Table.Td><Table.Td>{student.status_akun}</Table.Td>{/* Kolom Aksi */}<Table.Td className='text-right'>
                                             <div className='flex items-center justify-end gap-2'>
                                                 {/* Tombol Edit */}
                                                 {/* Tampilkan tombol hanya jika user punya permission 'students edit' */}
