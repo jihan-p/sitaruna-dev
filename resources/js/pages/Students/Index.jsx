@@ -11,7 +11,8 @@ import AddButton from '@/components/molecules/AddButton'; // Pastikan komponen A
 import EditButton from '@/components/molecules/EditButton'; // Pastikan komponen EditButton ada
 import DeleteButton from '@/components/molecules/DeleteButton'; // Pastikan komponen DeleteButton ada
 
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { IconEye, IconPencil, IconTrash, IconUsersGroup, IconPlus, IconDashboard, IconUsers, IconShield, IconList } from '@tabler/icons-react';
 import hasAnyPermission from '@/utils/Permissions'; // Pastikan path import ini benar
 
 // Pastikan komponen-komponen atom/molecule/organism di atas sudah ada dan berfungsi sesuai kebutuhan Anda
@@ -77,6 +78,18 @@ export default function Index({auth}) {
                                         {/* Tampilkan data di setiap kolom sesuai header */}
                                         <Table.Td>{student.nisn}</Table.Td><Table.Td>{student.nit}</Table.Td><Table.Td>{student.nama_lengkap}</Table.Td><Table.Td>{student.jenis_kelamin}</Table.Td><Table.Td>{student.status_akun}</Table.Td>{/* Kolom Aksi */}<Table.Td className='text-right'>
                                             <div className='flex items-center justify-end gap-2'>
+                                                {/* === TAMBAHKAN TOMBOL DETAIL INI === */}
+                                                {/* Tampilkan tombol hanya jika user punya permission 'students show' */}
+                                                {auth.user && hasAnyPermission([`${routeResourceName} show`]) && // Cek permission 'students show'
+                                                    <Link
+                                                        href={route(`${routeResourceName}.show`, student.id)} // Link ke route 'students.show' dengan ID siswa
+                                                        className="inline-flex items-center px-2 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150" // Kelas styling tombol biru
+                                                        title="Detail" // Tooltip saat hover
+                                                    >
+                                                        <IconEye size={16} strokeWidth={2} /> {/* Gunakan ikon mata dari Tabler Icons */}
+                                                    </Link>
+                                                }
+                                                {/* ==================================== */}
                                                 {/* Tombol Edit */}
                                                 {/* Tampilkan tombol hanya jika user punya permission 'students edit' */}
                                                 {auth.user && hasAnyPermission([`${routeResourceName} edit`]) &&

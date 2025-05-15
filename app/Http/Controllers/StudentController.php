@@ -21,6 +21,7 @@ class StudentController extends Controller implements HasMiddleware
             new Middleware('permission:students create', only: ['create', 'store']),
             new Middleware('permission:students edit', only: ['edit', 'update']),
             new Middleware('permission:students delete', only: ['destroy']),
+            new Middleware('permission:students show', only: ['show']), // Memerlukan permission 'students show'
         ];
     }
 
@@ -202,5 +203,22 @@ class StudentController extends Controller implements HasMiddleware
 
         // Redirect kembali ke halaman sebelumnya (index students) dengan pesan sukses
         return back()->with('success', 'Data Peserta Didik berhasil dihapus!');
+    }
+
+    /**
+     * Menampilkan resource tertentu (Detail Peserta Didik).
+     */
+    public function show(Student $student) // Menggunakan Route Model Binding
+    {
+        // Di sini Anda bisa memuat (load) relasi jika ada data terkait yang ingin ditampilkan di halaman detail
+        // Contoh: Memuat data enrollment siswa beserta kelas, tahun ajaran, semester, dan guru
+        // $student->load('enrollments.class.major', 'enrollments.academicYear', 'enrollments.semester', 'enrollments.teacher');
+
+        // Render halaman Inertia 'Students/Show' dan kirim data siswa
+        return inertia('Students/Show', [
+            'student' => $student,
+            // Jika Anda memuat relasi di atas, kirim juga relasinya:
+            // 'student' => $student->load('enrollments'), // Contoh memuat relasi enrollments
+        ]);
     }
 }

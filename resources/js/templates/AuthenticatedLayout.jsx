@@ -9,7 +9,7 @@ import ResponsiveNavLink from '@/components/atoms/ResponsiveNavLink'; // Untuk l
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react'; // Import useEffect dan useRef
 // Import ikon
-import { IconMenu2, IconX, IconLock, IconLockOpen } from '@tabler/icons-react'; // Tambah ikon kunci untuk pengunci
+import { IconMenu2, IconX, IconLock, IconLockOpen, IconHeart } from '@tabler/icons-react'; // Tambah ikon kunci untuk pengunci
 
 // Import ikon yang digunakan dalam NavLink
 import { IconDashboard, IconUsers, IconShield, IconList, IconUsersGroup } from '@tabler/icons-react'; // Contoh ikon, impor semua yang Anda gunakan
@@ -403,11 +403,30 @@ export default function AuthenticatedLayout({ header, children }) {
                     {children}
                 </main>
 
+                {/* Footer Minimal (Hanya Copyright) */}
+                {/* Gunakan tag footer dan kelas styling dasar */}
+                <footer className="bg-white py-4 text-center mt-8"> {/* Contoh kelas: background putih, padding atas/bawah, teks di tengah, margin atas */}
+                    {/* Gunakan container yang sesuai dengan layout Anda (misal, dari komponen Container atau div bawaan) */}
+                    {/* Asumsi layout Anda menggunakan max-w-7xl mx-auto px-4/px-6/px-8 */}
+                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                        {/* Konten copyright dari Welcome.jsx */}
+                        {/* Sesuaikan kelas styling jika perlu agar cocok dengan tampilan layout Anda */}
+                        <div className="border-top pt-4"> {/* Gunakan kelas border-top dan padding atas jika styling diinginkan */}
+                            <p className="text-gray-600 text-sm"> {/* Contoh kelas untuk warna dan ukuran teks */}
+                                {/* Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. */}
+                                Copyright &copy;{new Date().getFullYear()} All rights reserved | made with <IconHeart size={16} strokeWidth={1.5} className="inline-block align-text-bottom" /> by <a href="https://t.me/jhanplv" target="_blank" className="text-blue-600 hover:underline" >jipi</a> @RPL SMKN 2 Subang {/* Ganti dengan teks kontribusi Anda */}
+                                {/* Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. */}
+                            </p>
+                        </div>
+                    </div>
+                </footer>
+
             </div> {/* End Main Content Area */}
 
             {/* Konten Navigasi Responsif Asli - DIHAPUS */}
-
+            
         </div>
+        
     );
 }
 
