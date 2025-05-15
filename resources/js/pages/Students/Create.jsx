@@ -293,7 +293,7 @@ export default function Create({auth}) { // Terima prop 'auth' dari Inertia
 
 
                          {/* Input Status Akun (menggunakan elemen <select> standar) */}
-                         <FormGroup label={'Status Akun'} error={errors.status_akun}>
+                         <FormGroup label={'Status'} error={errors.status_akun}>
                             {/* Jika Anda punya komponen SelectInput kustom, gunakan itu */}
                             {/*
                             <SelectInput
@@ -322,12 +322,12 @@ export default function Create({auth}) { // Terima prop 'auth' dari Inertia
                                     errors.status_akun ? 'border-red-500' : ''
                                 }`} // Tambahkan class error
                             >
-                                <option value="">Pilih Status Akun</option>
+                                <option value="">Pilih Status</option>
                                 <option value="Aktif">Aktif</option>
                                 <option value="Nonaktif">Nonaktif</option>
                                 <option value="Lulus">Lulus</option>
-                                <option value="Keluar">Keluar</option>
                                 <option value="Mutasi">Mutasi</option>
+                                <option value="Keluar">Keluar</option>
                             </select>
                              {/* Tampilkan pesan error validasi jika ada */}
                             {errors.status_akun && <div className="text-red-500 text-sm mt-1">{errors.status_akun}</div>}
