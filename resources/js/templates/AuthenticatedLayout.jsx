@@ -12,7 +12,7 @@ import { useState, useEffect, useRef } from 'react'; // Import useEffect dan use
 import { IconMenu2, IconX, IconLock, IconLockOpen } from '@tabler/icons-react'; // Tambah ikon kunci untuk pengunci
 
 // Import ikon yang digunakan dalam NavLink
-import { IconDashboard, IconUsers, IconShield, IconList } from '@tabler/icons-react'; // Contoh ikon, impor semua yang Anda gunakan
+import { IconDashboard, IconUsers, IconShield, IconList, IconUsersGroup } from '@tabler/icons-react'; // Contoh ikon, impor semua yang Anda gunakan
 
 
 // Utilitas untuk cek izin
@@ -291,6 +291,20 @@ export default function AuthenticatedLayout({ header, children }) {
                              <NavLink method="post" href={route('logout')} as="button" isSidebarExpanded={isNavExpanded} isMobile={isMobile}>Log Out</NavLink>
                          </div>
                      )} */}
+
+                     {/* === INI BLOK KODE MENU PESERTA DIDIK YANG DIMAKSUD === */}
+                     {hasAnyPermission(['students index']) && // Sesuaikan permission
+                         <NavLink
+                            href={route('students.index')} // Link ke route index students
+                            active={route().current('students.index')} // Cek apakah route saat ini adalah index students
+                            isSidebarExpanded={isNavExpanded}
+                            isMobile={isMobile}
+                            icon={IconUsersGroup} // Gunakan ikon yang sesuai
+                        >
+                            Peserta Didik {/* Teks menu */}
+                        </NavLink>
+                     }
+                     {/* ====================================================== */}
 
                 </nav>
 

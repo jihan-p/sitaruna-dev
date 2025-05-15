@@ -1,0 +1,209 @@
+// resources/js/Pages/Students/Create.jsx
+
+import React from 'react';
+import AuthenticatedLayout from '@/templates/AuthenticatedLayout'; // Pastikan path import ini benar
+import Container from '@/components/atoms/Container'; // Pastikan path import ini benar
+import { Head, useForm, usePage } from '@inertiajs/react';
+
+// Import komponen form yang Anda miliki (sesuaikan path importnya)
+import TextInput from '@/components/atoms/TextInput'; // Contoh: untuk input teks
+// import SelectInput from '@/components/atoms/SelectInput'; // Contoh: untuk dropdown
+// import TextAreaInput from '@/components/atoms/TextAreaInput'; // Contoh: untuk textarea
+
+import PrimaryButton from '@/components/molecules/PrimaryButton'; // Pastikan path import ini benar
+import CancelButton from '@/components/molecules/CancelButton'; // Pastikan path import ini benar
+import Card from '@/components/organisms/Card'; // Pastikan path import ini benar
+import FormGroup from '@/components/molecules/FormGroup'; // Asumsi komponen FormGroup ada dan path importnya benar
+
+export default function Create({auth}) {
+    // Gunakan useForm hook Inertia untuk manajemen state form dan submit
+    const { data, setData, post, errors, processing } = useForm({
+        // Inisialisasi state form dengan nilai kosong untuk setiap field tabel 'students'
+        nisn: '',
+        nit: '',
+        // user_id: '', // Jika user_id di-link di sini, butuh logic tambahan
+        nama_lengkap: '',
+        jenis_kelamin: '', // Mungkin perlu nilai default atau opsi pertama dari dropdown
+        tempat_lahir: '',
+        tanggal_lahir: '', // Format 'YYYY-MM-DD' untuk input type="date"
+        agama: '',
+        no_hp: '',
+        email: '',
+        alamat: '',
+        status_akun: '', // Mungkin perlu nilai default atau opsi pertama dari dropdown
+        foto_profil: null, // Untuk upload file (nilai awal null)
+
+        // Fields untuk enrollments (jika manajemen enrollment digabung di sini, tapi disarankan terpisah)
+        // kelas_id: '',
+        // tahun_ajaran_id: '',
+        // semester_id: '',
+        // no_absen: '',
+    });
+
+    // Definisikan nama resource route
+    const routeResourceName = 'students';
+
+    // Handler saat form disubmit
+    const handleStoreData = async (e) => {
+        e.preventDefault();
+
+        // Kirim data form ke route store students
+        // Menggunakan post karena Inertia dengan metode _method: 'put'/'patch' bisa mengirim FormData (untuk file upload)
+        post(route(`${routeResourceName}.store`)); // Link ke route 'students.store' (misal: /students)
+    };
+
+    return (
+        <AuthenticatedLayout
+            user={auth.user}
+            // Header halaman
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Tambah Peserta Didik</h2>}
+        >
+            {/* Set title halaman di browser tab */}
+            <Head title={'Tambah Peserta Didik'}/>
+
+            <Container>
+                <Card>
+                    {/* Form HTML */}
+                    <form onSubmit={handleStoreData}>
+                        {/* ==== INPUT FIELDS UNTUK DATA SISWA ==== */}
+                        {/* Gunakan komponen FormGroup dan Input/TextInput/SelectInput/TextAreaInput sesuai kebutuhan */}
+                        {/* Pastikan prop 'error' diisi dari object 'errors' useForm */}
+
+                        {/* Contoh Input NISN */}
+                        <FormGroup label={'NISN'} error={errors.nisn}>
+                            <TextInput
+                                id="nisn"
+                                name="nisn" // Penting: nama input harus sama dengan nama kolom di DB
+                                type={'text'}
+                                value={data.nisn} // Ambil nilai dari state 'data' useForm
+                                onChange={e => setData('nisn', e.target.value)} // Update state 'data' saat input berubah
+                                placeholder="Input NISN.."
+                            />
+                        </FormGroup>
+
+                         {/* Contoh Input NIT */}
+                        <FormGroup label={'NIT'} error={errors.nit}>
+                            <TextInput
+                                id="nit"
+                                name="nit"
+                                type={'text'}
+                                value={data.nit}
+                                onChange={e => setData('nit', e.target.value)}
+                                placeholder="Input NIT.."
+                            />
+                        </FormGroup>
+
+                        {/* Contoh Input Nama Lengkap */}
+                         <FormGroup label={'Nama Lengkap'} error={errors.nama_lengkap}>
+                            <TextInput
+                                id="nama_lengkap"
+                                name="nama_lengkap"
+                                type={'text'}
+                                value={data.nama_lengkap}
+                                onChange={e => setData('nama_lengkap', e.target.value)}
+                                placeholder="Input Nama Lengkap.."
+                            />
+                        </FormGroup>
+
+                        {/* Contoh Input Jenis Kelamin (Sebaiknya pakai Select Input) */}
+                         <FormGroup label={'Jenis Kelamin'} error={errors.jenis_kelamin}>
+                            {/* Jika Anda punya komponen SelectInput: */}
+                            {/* <SelectInput
+                                id="jenis_kelamin"
+                                name="jenis_kelamin"
+                                value={data.jenis_kelamin}
+                                onChange={e => setData('jenis_kelamin', e.target.value)}
+                                options={[{value: 'L', label: 'Laki-laki'}, {value: 'P', label: 'Perempuan'}]} // Contoh opsi statis
+                            /> */}
+                             {/* Jika tidak ada SelectInput, pakai TextInput sederhana dulu */}
+                             <TextInput
+                                id="jenis_kelamin"
+                                name="jenis_kelamin"
+                                type={'text'} // Ganti type jika pakai select
+                                value={data.jenis_kelamin}
+                                onChange={e => setData('jenis_kelamin', e.target.value)}
+                                placeholder="Input L/P.."
+                            />
+                        </FormGroup>
+
+                        {/* Contoh Input Tanggal Lahir (pakai type="date") */}
+                         <FormGroup label={'Tanggal Lahir'} error={errors.tanggal_lahir}>
+                            <TextInput
+                                id="tanggal_lahir"
+                                name="tanggal_lahir"
+                                type={'date'} // Penting untuk input tanggal
+                                value={data.tanggal_lahir}
+                                onChange={e => setData('tanggal_lahir', e.target.value)}
+                            />
+                        </FormGroup>
+
+                         {/* Contoh Input Email */}
+                         <FormGroup label={'Email'} error={errors.email}>
+                            <TextInput
+                                id="email"
+                                name="email"
+                                type={'email'}
+                                value={data.email}
+                                onChange={e => setData('email', e.target.value)}
+                                placeholder="Input email.."
+                            />
+                        </FormGroup>
+
+                         {/* Contoh Input Alamat (Sebaiknya pakai TextAreaInput) */}
+                         <FormGroup label={'Alamat'} error={errors.alamat}>
+                            {/* Jika Anda punya komponen TextAreaInput: */}
+                            {/* <TextAreaInput
+                                id="alamat"
+                                name="alamat"
+                                value={data.alamat}
+                                onChange={e => setData('alamat', e.target.value)}
+                                placeholder="Input alamat.."
+                            /> */}
+                             {/* Jika tidak ada TextAreaInput, pakai TextInput type="text" multiline */}
+                              <TextInput
+                                id="alamat"
+                                name="alamat"
+                                type={'text'} // Ganti type jika pakai textarea
+                                value={data.alamat}
+                                onChange={e => setData('alamat', e.target.value)}
+                                placeholder="Input alamat.."
+                            />
+                        </FormGroup>
+
+                         {/* Contoh Input Foto Profil (pakai type="file") */}
+                         <FormGroup label={'Foto Profil'} error={errors.foto_profil}>
+                            <input // Input type file seringkali tidak pakai komponen custom yang kompleks
+                                id="foto_profil"
+                                name="foto_profil" // Penting: nama input file
+                                type={'file'}
+                                onChange={e => setData('foto_profil', e.target.files[0])} // Ambil file pertama yang dipilih
+                            />
+                            {/* Opsional: Tampilkan preview gambar jika user memilih file */}
+                            {data.foto_profil instanceof File && ( // Cek apakah foto_profil adalah objek File
+                                 <img src={URL.createObjectURL(data.foto_profil)} alt="Preview" className="mt-2 h-20 w-20 object-cover" />
+                            )}
+                        </FormGroup>
+
+
+                        {/* ... Tambahkan input fields lainnya untuk:
+                            - tempat_lahir
+                            - agama
+                            - no_hp
+                            - status_akun (sebaiknya Select Input)
+                        ... */}
+
+
+                        {/* ==== END INPUT FIELDS ==== */}
+
+
+                        {/* Tombol Submit dan Cancel */}
+                        <div className='flex items-center gap-2 mt-4'> {/* Tambahkan margin atas */}
+                            <PrimaryButton type={'submit'} disabled={processing}> Simpan Data </PrimaryButton> {/* Tombol submit form */}
+                            <CancelButton url={route(`${routeResourceName}.index`)}> Kembali </CancelButton> {/* Tombol kembali ke halaman index */}
+                        </div>
+                    </form>
+                </Card>
+            </Container>
+        </AuthenticatedLayout>
+    );
+}

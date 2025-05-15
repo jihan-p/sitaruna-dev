@@ -89,9 +89,6 @@ class StudentController extends Controller implements HasMiddleware
             'alamat' => 'nullable|string', // Alamat bisa kosong, string (untuk TEXT di DB)
             'status_akun' => ['nullable', 'string', Rule::in(['Aktif', 'Nonaktif', 'Lulus', 'Keluar', 'Mutasi'])], // Status bisa kosong, validasi nilai
             'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Foto Profil bisa kosong, format gambar, max 2MB
-
-            // user_id biasanya dilink setelah user dibuat atau melalui proses lain
-            // class_id, year_id, semester_id, no_absen adalah untuk tabel enrollments, bukan di sini
         ]);
 
         // Handle upload file foto_profil
