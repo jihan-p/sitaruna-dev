@@ -3,7 +3,7 @@ import React from 'react';
 import Button from '@/components/atoms/Button'; // Import atom Button
 import { IconCheck } from '@tabler/icons-react'; // Asumsi ikon diimpor dari sini
 
-export default function SubmitButton({ children = 'Save Data', className = '', ...props }) {
+export default function SubmitButton({ children = 'Simpan Data', className = '', ...props }) {
     // SubmitButton adalah molekul yang menggunakan atom Button dan menambahkan styling/ikon/type
      return (
         <Button

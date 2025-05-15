@@ -11,7 +11,7 @@ export default function CancelButton({ url, className = '', children, ...props }
             className={`px-4 py-2 text-sm rounded-lg border border-rose-100 bg-rose-50 text-rose-500 flex items-center gap-2 hover:bg-rose-100 ${className}`} // Styling asli dari Button type='cancel'
             {...props} // Meneruskan props lain ke Link
         >
-            <IconArrowBack size={16} strokeWidth={1.5}/> {children || 'Go Back'} {/* Ikon dan teks */}
+            <IconArrowBack size={16} strokeWidth={1.5}/> {children || 'Kembali'} {/* Ikon dan teks */}
         </Link>
     );
 }

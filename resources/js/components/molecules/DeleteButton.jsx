@@ -10,22 +10,23 @@ export default function DeleteButton({ url, className = '', ...props }) {
 
     const handleDelete = () => {
         Swal.fire({
-            title: 'Are you sure?',
-            text: 'You will not be able to recover this data!',
+            title: 'Apa Anda Yakin?',
+            text: 'Data ini tidak akan bisa dipulihkan!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
+            cancelButtonText: 'Kembali',
+            confirmButtonText: 'Ya, hapus!'
         }).then((result) => {
             if (result.isConfirmed) {
                 destroy(url, {
                     onSuccess: () => {
-                         Swal.fire('Deleted!', 'Data has been deleted.', 'success');
+                         Swal.fire('Terhapus', 'Data berhasil dihapus.', 'success');
                         // Mungkin perlu trigger refresh data di parent
                     },
                     onError: () => {
-                         Swal.fire('Error!', 'Failed to delete data.', 'error');
+                         Swal.fire('Error!', 'Gagal menghapus data.', 'error');
                     }
                 });
             }

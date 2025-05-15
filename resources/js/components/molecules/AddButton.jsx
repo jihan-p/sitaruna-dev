@@ -11,7 +11,7 @@ export default function AddButton({ url, className = '', children, ...props }) {
             className={`px-4 py-2 text-sm border rounded-lg bg-white text-gray-700 flex items-center gap-2 hover:bg-gray-100 ${className}`} // Styling asli dari Button type='add'
             {...props} // Meneruskan props lain ke Link
         >
-             <IconPlus size={18} strokeWidth={1.5}/> {children || <span className='hidden lg:flex'>Create New Data</span>} {/* Ikon dan teks */}
+             <IconPlus size={18} strokeWidth={1.5}/> {children || <span className='hidden lg:flex'>Tambah Data Baru</span>} {/* Ikon dan teks */}
         </Link>
     );
 }
