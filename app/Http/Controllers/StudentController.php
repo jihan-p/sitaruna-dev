@@ -128,39 +128,59 @@ class StudentController extends Controller implements HasMiddleware
      */
     public function update(Request $request, Student $student) // Route Model Binding
     {
-        // Validasi data yang masuk (mirip dengan store, tapi unik constraint mengabaikan data siswa saat ini)
-         $validatedData = $request->validate([
-            'nisn' => ['required', 'string', 'max:255', Rule::unique('students', 'nisn')->ignore($student->id)], // Unik kecuali record siswa ini
-            'nit' => ['nullable', 'string', 'max:255', Rule::unique('students', 'nit')->ignore($student->id)], // Unik kecuali record siswa ini, nullable
+        // Validate the request data
+        $validatedData = $request->validate([
+            'nisn' => ['required', 'string', 'max:255', Rule::unique('students', 'nisn')->ignore($student->id)],
+            'nit' => ['nullable', 'string', 'max:255', Rule::unique('students', 'nit')->ignore($student->id)],
             'nama_lengkap' => 'required|string|max:255',
             'jenis_kelamin' => ['nullable', 'string', Rule::in(['L', 'P'])],
             'tempat_lahir' => 'nullable|string|max:255',
             'tanggal_lahir' => 'nullable|date',
             'agama' => 'nullable|string|max:50',
             'no_hp' => 'nullable|string|max:50',
-            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('students', 'email')->ignore($student->id)], // Unik kecuali record siswa ini, nullable
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('students', 'email')->ignore($student->id)],
             'alamat' => 'nullable|string',
             'status_akun' => ['nullable', 'string', Rule::in(['Aktif', 'Nonaktif', 'Lulus', 'Keluar', 'Mutasi'])],
-            'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Bisa kosong jika tidak upload file baru
+            // Foto Profil: Aturan validasi sama, nullable image
+            'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Handle upload file foto_profil
+        // Handle foto_profil upload
         if ($request->hasFile('foto_profil')) {
+            // KASUS 1: Ada file baru yang diupload.
             // Hapus foto lama jika ada
             if ($student->foto_profil) {
                 Storage::disk('public')->delete($student->foto_profil);
             }
+            // Simpan file baru
             $file = $request->file('foto_profil');
             $fileName = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
             $filePath = $file->storeAs('student_photos', $fileName, 'public');
-            $validatedData['foto_profil'] = $filePath; // Simpan path file baru
+            $validatedData['foto_profil'] = $filePath; // Update path foto_profil di $validatedData
+
         } else {
-            // Jika tidak ada file baru diupload, pertahankan path foto lama
-            // Jika ada input di form untuk explicit menghapus foto, Anda perlu logic tambahan di sini
-            // $validatedData['foto_profil'] = $student->foto_profil; // Baris ini tidak perlu karena update() akan mempertahankan nilai jika tidak ada di $validatedData
+            // KASUS 2: TIDAK ada file baru yang diupload dari form.
+            // Jika tidak ada file baru, nilai 'foto_profil' dari front-end (via useForm) biasanya 'null'.
+            // Validator akan memasukkan 'foto_profil' => null ke dalam $validatedData.
+            // Jika kita membiarkan ini, update() akan SET kolom DB menjadi NULL.
+
+            // === PERBAIKAN DI SINI ===
+            // Untuk MEMPERTAHANKAN foto lama saat TIDAK upload foto baru:
+            // Hapus key 'foto_profil' dari array $validatedData.
+            // Dengan begitu, Eloquent akan MENGABAIKAN kolom ini saat update dan MEMPERTAHANKAN nilai lamanya di database.
+            if (array_key_exists('foto_profil', $validatedData)) {
+                 // Hapus hanya jika 'foto_profil' ada di $validatedData (harusnya ada jika form mengirim null/kosong)
+                 // Ini mencegah Eloquent mengubahnya menjadi NULL.
+                 unset($validatedData['foto_profil']);
+            }
+
+            // Catatan: Jika Anda ingin fitur untuk MENGHAPUS foto tanpa mengupload yang baru (misal dengan checkbox),
+            // Anda perlu menambahkan input checkbox di front-end, lalu di sini tambahkan logika:
+            // else if ($request->has('clear_photo')) { $validatedData['foto_profil'] = null; // Set DB ke null }
+            // Untuk saat ini, perbaikan ini hanya memastikan foto TIDAK hilang jika tidak ada file baru yang diupload.
         }
 
-        // Update record siswa di database
+        // Update record siswa di database dengan data yang sudah divalidasi (dan mungkin sudah diubah 'foto_profil' atau dihapus dari array).
         $student->update($validatedData);
 
         // Redirect ke halaman index students dengan pesan sukses
