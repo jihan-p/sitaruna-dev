@@ -30,5 +30,13 @@ class PermissionsTableSeeder extends Seeder
         Permission::create(['name' => 'permissions create', 'guard_name' => 'web']);
         Permission::create(['name' => 'permissions edit', 'guard_name' => 'web']);
         Permission::create(['name' => 'permissions delete', 'guard_name' => 'web']);
+
+        // === TAMBAHKAN KODE INI UNTUK PERMISSION STUDENTS ===
+        // permission students
+        Permission::create(['name' => 'students index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'students create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'students edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'students delete', 'guard_name' => 'web']);
+        // ====================================================
     }
 }
