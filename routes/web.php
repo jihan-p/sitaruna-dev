@@ -5,6 +5,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\MajorController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -35,6 +36,10 @@ Route::middleware('auth')->group(function () {
 
     // students route
     Route::resource('/students', StudentController::class);
+
+    // === Routes untuk Modul Jurusan ===
+    // Mendefinisikan route resource untuk MajorController
+    Route::resource('majors', MajorController::class);
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
