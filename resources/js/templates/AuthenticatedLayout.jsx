@@ -9,10 +9,7 @@ import ResponsiveNavLink from '@/components/atoms/ResponsiveNavLink'; // Untuk l
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react'; // Import useEffect dan useRef
 // Import ikon
-import { IconMenu2, IconX, IconLock, IconLockOpen, IconHeart } from '@tabler/icons-react'; // Tambah ikon kunci untuk pengunci
-
-// Import ikon yang digunakan dalam NavLink
-import { IconDashboard, IconUsers, IconShield, IconList, IconUsersGroup } from '@tabler/icons-react'; // Contoh ikon, impor semua yang Anda gunakan
+import { IconMenu2, IconX, IconLock, IconLockOpen, IconDashboard, IconUsers, IconShield, IconList, IconUsersGroup, IconBuildingSkyscraper } from '@tabler/icons-react'; // <== Tambahkan ikon untuk Jurusan di sini (misal: IconBuildingSkyscraper)
 
 
 // Utilitas untuk cek izin
@@ -304,7 +301,19 @@ export default function AuthenticatedLayout({ header, children }) {
                             Peserta Didik {/* Teks menu */}
                         </NavLink>
                      }
-                     {/* ====================================================== */}
+                     
+                     {/* Tampilkan hanya jika user punya permission 'majors index' */}
+                     {auth.user && hasAnyPermission(['majors index']) && ( // Cek permission 'majors index'
+                         <NavLink
+                            href={route('majors.index')} // Link ke route 'majors.index'
+                            active={route().current('majors.index')} // Cek apakah route saat ini adalah 'majors.index'
+                            isSidebarExpanded={isNavExpanded}
+                            isMobile={isMobile}
+                            icon={IconBuildingSkyscraper} // <== Ganti dengan ikon yang Anda impor dan pilih
+                        >
+                            Jurusan {/* Teks menu */}
+                        </NavLink>
+                     )}
 
                 </nav>
 
