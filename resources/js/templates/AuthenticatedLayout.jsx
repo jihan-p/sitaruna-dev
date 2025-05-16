@@ -81,113 +81,152 @@ export default function AuthenticatedLayout({ user: authUser, header, children }
     // Ref untuk elemen sidebar (agar bisa pasang event listener)
     const sidebarRef = useRef(null);
 
-
-    // === Efek & Handler untuk Perilaku Desktop (Hover/Click) dan Responsif ===
+    // === useEffect 1: Handle Resize Event dan Update isMobile State ===
     useEffect(() => {
+        console.log('Resize Listener Effect Triggered'); // LOG Resize Effect
+
+        const handleResize = () => {
+            console.log('handleResize called'); // LOG 8
+            // Cukup update state isMobile
+            const mobile = window.innerWidth < 640;
+            setIsMobile(mobile);
+            console.log('handleResize: Set isMobile to', mobile);
+            // Logika pengaturan isSidebarExpanded dan isSidebarLocked TIDAK DI SINI lagi
+        };
+
+        // Tambahkan resize listener
+        window.addEventListener('resize', handleResize);
+        console.log('Added resize listener');
+
+        // Cleanup: Hapus resize listener saat komponen unmount
+        return () => {
+            console.log('Resize Listener Effect Cleanup'); // LOG Cleanup Resize Effect
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []); // Dependency array kosong: effect ini hanya berjalan sekali saat mount dan cleanup saat unmount
+
+
+    // === useEffect 2: Sinkronisasi State isSidebarExpanded ===
+    // Efek ini berjalan SETIAP KALI isMobile atau isSidebarLocked berubah
+    useEffect(() => {
+        console.log('Sync Expanded Effect Triggered', { isMobile_dep: isMobile, isSidebarLocked_dep: isSidebarLocked }); // LOG Sync Effect
+
+        // Logika utama untuk menentukan apakah sidebar harus expanded
+        if (!isMobile) { // Jika di Desktop
+            console.log('Sync Expanded Effect: On Desktop'); // Log
+            // Di desktop, expanded state mengikuti locked state
+            if (isSidebarLocked) {
+                if (!isSidebarExpanded) { // Hindari update state yang tidak perlu
+                    setIsSidebarExpanded(true); // LOG 18a
+                    console.log('Sync Expanded Effect: Setting isSidebarExpanded TRUE because isSidebarLocked TRUE on Desktop');
+                }
+            } else { // Jika di Desktop DAN TIDAK Terkunci
+                // Sidebar seharusnya COLLAPSED (kecuali sedang di-hover, yang ditangani listener mouse)
+                if (isSidebarExpanded) { // Jika saat ini Expanded (misal setelah unlock), set false
+                    setIsSidebarExpanded(false); // LOG 18b
+                    console.log('Sync Expanded Effect: Setting isSidebarExpanded FALSE because isSidebarLocked FALSE on Desktop');
+                }
+            }
+        } else { // Jika di Mobile
+            console.log('Sync Expanded Effect: On Mobile'); // Log
+            // Di mobile, desktop expanded state seharusnya selalu FALSE
+            if (isSidebarExpanded) { // Jika saat ini Expanded (tidak seharusnya di mobile), set false
+                setIsSidebarExpanded(false); // LOG 18c
+                console.log('Sync Expanded Effect: Setting isSidebarExpanded FALSE on Mobile');
+            }
+            // Note: isMobileSidebarOpen yang mengontrol visual sidebar mobile, bukan isSidebarExpanded
+        }
+        // Jangan kembalikan fungsi cleanup di sini untuk menghindari bug re-render pada state ini
+        // Cleanup listeners ditangani di effect terpisah
+    }, [isMobile, isSidebarLocked]); // Dependencies: bereaksi pada perubahan isMobile atau isSidebarLocked
+
+
+    // === useEffect 3: Kelola Mouse Enter/Leave Listeners ===
+    // Efek ini berjalan SETIAP KALI isMobile atau isSidebarLocked berubah (untuk menambah/menghapus listener)
+    useEffect(() => {
+        console.log('Mouse Listeners Effect Triggered', { isMobile_dep: isMobile, isSidebarLocked_dep: isSidebarLocked, currentIsSidebarExpanded: isSidebarExpanded }); // LOG Mouse Effect
         const sidebarElement = sidebarRef.current;
-        if (!sidebarElement) return; // Pastikan elemen DOM sidebar sudah ada
+        if (!sidebarElement) return; // Pastikan ref sudah terisi
 
         // Handler Mouse Enter (Desktop - hanya jika TIDAK terkunci)
         const handleMouseEnter = () => {
+            console.log('handleMouseEnter triggered', { isMobile, isSidebarLocked }); // LOG 5
             if (!isMobile && !isSidebarLocked) {
                 setIsSidebarExpanded(true);
+                console.log('setIsSidebarExpanded(true) from mouse enter'); // LOG 5a
             }
         };
 
         // Handler Mouse Leave (Desktop - hanya jika TIDAK terkunci)
         const handleMouseLeave = () => {
+            console.log('handleMouseLeave triggered', { isMobile, isSidebarLocked }); // LOG 6
             if (!isMobile && !isSidebarLocked) {
-                 // Tambahkan penundaan singkat untuk menghindari jank saat kursor cepat keluar dari area sidebar
-                 // Ini memberi sedikit 'grace period' sebelum sidebar collapsed
-                 // Anda bisa sesuaikan nilai penundaan ini jika perlu
-                setTimeout(() => {
-                    // Cek kembali state isSidebarLocked setelah penundaan, karena user mungkin mengklik kunci saat penundaan
-                    if (!isSidebarLocked) {
+                 // Tambahkan penundaan singkat sebelum meng-collapse
+                 setTimeout(() => {
+                     console.log('handleMouseLeave setTimeout check', { isSidebarLockedAtTimeout: isSidebarLocked, currentIsSidebarExpanded: isSidebarExpanded }); // LOG 7
+                    // Hanya collapse jika TIDAK terkunci DAN sidebar saat ini Expanded
+                    if (!isSidebarLocked && isSidebarExpanded) {
                        setIsSidebarExpanded(false);
+                       console.log('setIsSidebarExpanded(false) from mouse leave timeout'); // LOG 7a
                     }
                 }, 50); // Penundaan 50ms
             }
         };
 
-        // Handler Resize (Update isMobile state)
-        const handleResize = () => {
-            const mobile = window.innerWidth < 640;
-            const wasMobile = isMobile; // Simpan state mobile sebelumnya
-            setIsMobile(mobile);
-
-            // Jika beralih DARI desktop KE mobile
-            if (!mobile && wasMobile) {
-                // Reset state desktop saat beralih ke mobile
-                setIsSidebarExpanded(false); // Pastikan collapsed di mobile
-                // State isSidebarLocked dibiarkan apa adanya (akan dimuat lagi saat kembali ke desktop)
-                // Tutup sidebar mobile jika terbuka saat resize ke desktop (jika perlu)
-                 if (isMobileSidebarOpen) {
-                     setIsMobileSidebarOpen(false);
-                 }
-            }
-            // Jika beralih DARI mobile KE desktop
-            else if (mobile && !wasMobile) {
-                 // Saat beralih ke desktop:
-                 // Atur expanded sesuai state locked (yang sudah dimuat dari localStorage saat init atau diubah user)
-                 setIsSidebarExpanded(isSidebarLocked); // isSidebarExpanded mengikuti isSidebarLocked
-                 // Tutup sidebar mobile jika terbuka saat resize dari mobile ke desktop
-                 if (isMobileSidebarOpen) {
-                      setIsMobileSidebarOpen(false);
-                 }
-            }
-            // Jika tetap di desktop ATAU tetap di mobile
-            // Tidak ada aksi khusus di sini, state isMobile sudah terupdate
-        };
-
-        // === INISIALISASI AWAL UNTUK isMobile dan isSidebarExpanded SETELAH KOMPONEN MOUNT ===
-        // Panggil handler resize sekali saat komponen mount untuk mengatur state isMobile awal
-        // dan state isSidebarExpanded awal berdasarkan isSidebarLocked
-        handleResize(); // Call handleResize once on mount
-
-        // --- Tambahkan Event Listeners ---
-        // Listener Mouse Hover/Leave hanya di desktop (tidak ditambahkan jika isMobile true)
-        // Listener akan ditambahkan/dihapus ulang saat [isMobile] berubah di dependency array
-        if (!isMobile) {
+        // === Tambahkan/Hapus Event Listeners ===
+        // Listener untuk hover hanya di desktop (!isMobile) DAN saat TIDAK terkunci (!isSidebarLocked)
+        if (!isMobile && !isSidebarLocked) {
+             console.log('Mouse Listeners: Adding mouse listeners');
+             // Hapus listener lama (penting untuk cleanup saat dependencies berubah)
+             sidebarElement.removeEventListener('mouseenter', handleMouseEnter);
+             sidebarElement.removeEventListener('mouseleave', handleMouseLeave);
+             // Tambahkan listener baru
              sidebarElement.addEventListener('mouseenter', handleMouseEnter);
              sidebarElement.addEventListener('mouseleave', handleMouseLeave);
-             // Event listeners untuk focus/blur pada elemen di dalam sidebar (jika diperlukan penanganan keyboard)
-             // Memerlukan logika yang lebih kompleks untuk mendeteksi fokus di dalam elemen sidebar
+        } else {
+             // Jika kondisi tidak terpenuhi (Mobile ATAU Terkunci), pastikan listener dihapus
+             console.log('Mouse Listeners: Removing mouse listeners');
+             sidebarElement.removeEventListener('mouseenter', handleMouseEnter);
+             sidebarElement.removeEventListener('mouseleave', handleMouseLeave);
         }
-        // Listener Resize di seluruh window
-        window.addEventListener('resize', handleResize);
 
 
-        // --- Cleanup Event Listeners ---
-        // Fungsi cleanup akan dijalankan saat komponen unmount atau saat dependencies effect berubah
+        // Cleanup: Hapus listener saat dependencies berubah atau komponen unmount
         return () => {
+            console.log('Mouse Listeners Effect Cleanup'); // LOG Cleanup Mouse Effect
             if (sidebarElement) {
+                 // Hapus semua listener mouse yang mungkin terpasang
                  sidebarElement.removeEventListener('mouseenter', handleMouseEnter);
                  sidebarElement.removeEventListener('mouseleave', handleMouseLeave);
             }
-            window.removeEventListener('resize', handleResize);
         };
-    }, [isMobile, isSidebarLocked]); // Re-run effect jika isMobile atau isSidebarLocked berubah
+    }, [isMobile, isSidebarLocked, isSidebarExpanded]); // Dependencies: sertakan state yang dibaca/ditulis di handler
 
 
-    // Fungsi untuk men-toggle tampilan sidebar mobile (dari tombol burger/ikon X)
+    // === Handler Toggle Sidebar Mobile ===
     const toggleMobileSidebar = () => {
+        console.log('toggleMobileSidebar called'); // LOG 14
         setIsMobileSidebarOpen((prevState) => !prevState);
+        // State isSidebarExpanded akan diatur menjadi false oleh Sync Expanded Effect saat isMobile jadi true
     };
 
-    // Fungsi untuk men-toggle mode terkunci (Locked) sidebar desktop (dari tombol khusus)
+    // === Handler Toggle Sidebar Lock (Desktop Only) ===
     const toggleSidebarLock = () => {
         const nextLockedState = !isSidebarLocked;
+        console.log('toggleSidebarLock called, nextLockedState:', nextLockedState); // LOG 15
+        // Update state isSidebarLocked
         setIsSidebarLocked(nextLockedState);
-        // === TAMBAHKAN BARIS INI UNTUK MENYIMPAN STATE TERKUNCI KE localStorage ===
-        // Simpan status terkunci baru (dalam bentuk string 'true' atau 'false') ke localStorage
-        // Menggunakan try...catch untuk keamanan jika localStorage tidak tersedia
+        // Simpan ke localStorage
         try {
              localStorage.setItem('sidebarLocked', nextLockedState.toString());
+             console.log('localStorage sidebarLocked set to:', nextLockedState); // LOG 16
         } catch (e) {
              console.error("Failed to write to localStorage:", e);
         }
-        // Saat dikunci (true), pastikan expanded. Saat tidak dikunci (false), kembali ke default (collapsed)
-        setIsSidebarExpanded(nextLockedState);
+        // State isSidebarExpanded akan diatur dengan benar oleh Sync Expanded Effect
+        // Namun, kita bisa set di sini juga untuk respons UI instan saat klik tombol kunci
+        setIsSidebarExpanded(nextLockedState); // LOG 17
+        console.log('toggleSidebarLock: Setting isSidebarExpanded to', nextLockedState, 'for immediate UI update');
     };
 
 
@@ -215,7 +254,7 @@ export default function AuthenticatedLayout({ user: authUser, header, children }
      const mainContentClasses = `
          flex-1 flex flex-col overflow-y-auto /* padding konten & scroll */
          // --- Margin Kiri Dinamis (Hanya di Desktop) ---
-         ${isMobile ? 'ml-0' : (isSidebarExpanded ? 'sm:ml-0' : 'sm:ml-20')} /* Margin kiri 0 mobile, ikuti lebar sidebar di desktop */
+         ${isMobile ? 'ml-0' : (isSidebarExpanded ? 'sm:ml-0' : 'sm:ml-0')} /* Margin kiri 0 mobile, ikuti lebar sidebar di desktop */
      `; // Sesuaikan sm:ml-20 dan sm:ml-64 sesuai lebar mini/penuh sidebar desktop
 
 
@@ -503,13 +542,10 @@ export default function AuthenticatedLayout({ user: authUser, header, children }
                     <div className="max-w-7xl mx-auto sm:px-6 lg:px-8"> {/* Sesuaikan container footer jika perlu */}
                         {/* Konten copyright */}
                         {/* Sesuaikan kelas styling jika perlu agar cocok dengan tampilan layout Anda */}
-                        <div className="border-t border-gray-200 pt-4"> {/* Gunakan kelas border-t dan padding atas jika styling diinginkan */}
-                            <p className="text-gray-600 text-sm"> {/* Contoh kelas untuk warna dan ukuran teks */}
-                                {/* Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. */}
+                        <p className="text-gray-600 text-sm"> {/* Contoh kelas untuk warna dan ukuran teks */}
                                 Copyright &copy;{new Date().getFullYear()} All rights reserved | made with <IconHeart size={16} strokeWidth={1.5} className="inline-block align-text-bottom" /> by <a href="https://t.me/jhanplv" target="_blank" className="text-blue-600 hover:underline" >jipi</a> @RPL SMKN 2 Subang {/* Ganti dengan teks kontribusi Anda */}
-                                {/* Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. */}
-                            </p>
-                        </div>
+                        </p>
+                        
                     </div>
                 </footer> {/* === Akhir Footer === */}
 
