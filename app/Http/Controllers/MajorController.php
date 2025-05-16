@@ -10,19 +10,17 @@ use Illuminate\Support\Facades\Gate; // Jika pakai Gate untuk permission
 
 class MajorController extends Controller
 {
-    // === Tambahkan Middleware Permission di sini jika Anda menggunakan Spatie ===
-    // Atau gunakan Gate/Policy di dalam setiap method jika lebih suka itu.
-    public function __construct()
+    
+    public static function middleware()
     {
-        // Contoh: Gunakan middleware 'permission' dari Spatie
-        $this->middleware('permission:majors index')->only('index');
-        $this->middleware('permission:majors create')->only(['create', 'store']);
-        $this->middleware('permission:majors edit')->only(['edit', 'update']);
-        $this->middleware('permission:majors delete')->only('destroy');
-        // $this->middleware('permission:majors show')->only('show'); // Jika ada halaman show
+        return [
+            new Middleware('permission:majors index', only: ['index']),
+            new Middleware('permission:majors create', only: ['create', 'store']),
+            new Middleware('permission:majors edit', only: ['edit', 'update']),
+            new Middleware('permission:majors delete', only: ['destroy']),
+        ];
     }
-    // ==========================================================================
-
+    
     /**
      * Menampilkan daftar Jurusan.
      */

@@ -106,7 +106,7 @@ export default function Edit({auth}) { // Terima prop 'auth' dari Inertia
                                 value={data.nama_jurusan} // === Ambil nilai DARI STATE 'data' useForm (yang sudah diisi dari prop 'major') ===
                                 onChange={e => setData('nama_jurusan', e.target.value)} // Update state 'data' saat input berubah
                                 placeholder="Input Nama Jurusan.." // Teks placeholder
-                                className="mt-1 block w-full" // Kelas styling Anda
+                                className="mt-1 block w-full capitalize" // Kelas styling Anda
                                 // Props lain jika ada (misal: required, disabled, readonly, dll.)
                             />
                         </FormGroup>

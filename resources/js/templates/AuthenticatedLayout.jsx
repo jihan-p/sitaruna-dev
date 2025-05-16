@@ -1,64 +1,91 @@
 // resources/js/templates/AuthenticatedLayout.jsx
 
-// Import komponen
-import ApplicationLogo from '@/components/atoms/ApplicationLogo';
-import Dropdown from '@/components/molecules/Dropdown';
-import NavLink from '@/components/atoms/NavLink'; // Akan dimodifikasi
-import ResponsiveNavLink from '@/components/atoms/ResponsiveNavLink'; // Untuk link profil/logout di mobile sidebar jika diinginkan
+import React from 'react';
+// Import komponen-komponen atom/molecule/organism yang Anda miliki (sesuaikan path importnya)
+// === Pastikan path import komponen Anda sesuai dengan struktur proyek Anda ===
+import ApplicationLogo from '@/components/atoms/ApplicationLogo'; // Logo aplikasi di sidebar
+import Dropdown from '@/components/molecules/Dropdown';       // Dropdown user di header
+import NavLink from '@/components/atoms/NavLink';             // Komponen untuk link navigasi di sidebar
+import ResponsiveNavLink from '@/components/atoms/ResponsiveNavLink'; // Opsional: untuk link profil/logout di mobile sidebar jika diinginkan
+// =============================================================================
 
-import { Link, usePage } from '@inertiajs/react';
-import { useState, useEffect, useRef } from 'react'; // Import useEffect dan useRef
-// Import ikon
-import { IconMenu2, IconX, IconLock, IconLockOpen, IconDashboard, IconUsers, IconShield, IconList, IconUsersGroup, IconBuildingSkyscraper } from '@tabler/icons-react'; // <== Tambahkan ikon untuk Jurusan di sini (misal: IconBuildingSkyscraper)
+// Import hook dan komponen dari Inertia
+import { Link, usePage } from '@inertiajs/react'; // Link untuk navigasi, usePage untuk akses global props (seperti auth)
+import { useState, useEffect, useRef } from 'react'; // Import hook React
+
+// Import ikon dari Tabler Icons (sesuaikan dengan ikon yang Anda gunakan)
+// === Pastikan Anda sudah menginstal paket @tabler/icons-react ===
+import {
+    IconMenu2, // Ikon burger untuk toggle mobile sidebar
+    IconX,     // Ikon close untuk menutup mobile sidebar
+    IconLock,  // Ikon kunci tertutup
+    IconLockOpen, // Ikon kunci terbuka
+    IconDashboard, // Ikon Dashboard
+    IconUsers,     // Ikon Users/Roles (contoh)
+    IconShield,    // Ikon Permissions (contoh)
+    IconList,      // Ikon List (contoh)
+    IconUsersGroup, // Ikon Peserta Didik (contoh)
+    IconBuildingSkyscraper, // Ikon Jurusan (contoh)
+    IconHeart // Ikon hati untuk footer
+} from '@tabler/icons-react';
+// ==============================================================
+
+// Import utility untuk cek izin menggunakan Spatie (sesuaikan path importnya)
+// === Pastikan path import utility hasAnyPermission Anda benar ===
+import hasAnyPermission from '@/utils/Permissions';
+// ============================================================
 
 
-// Utilitas untuk cek izin
-import hasAnyPermission from '@/utils/Permissions'; // Pastikan path ini benar
+// Komponen Layout Utama yang akan membungkus konten halaman
+// Menerima prop 'auth' (dari Inertia via page component), 'header' (konten header), dan 'children' (konten halaman)
+export default function AuthenticatedLayout({ user: authUser, header, children }) { // Menggunakan 'authUser' untuk menghindari konflik nama jika ada variabel 'user' lain, tapi di sini bisa langsung {auth, header, children} jika page component pass prop 'auth'
 
-
-export default function AuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    // === Mengambil user dari props Inertia (cara standar) ===
+    // Ini akan selalu mendapatkan user yang sedang login di route terautentikasi
+    const { auth } = usePage().props; // Ambil objek 'auth' dari global page props
+    const user = auth.user; // Ambil objek user dari auth
 
     // State untuk toggle sidebar mobile (Hidden/Shown)
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-    // === STATE UNTUK PERILAKU DESKTOP ===
+    // === STATE UNTUK PERILAKU SIDEBAR DESKTOP ===
     // State untuk mengontrol apakah sidebar expanded (baik karena hover atau lock)
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
-    // State untuk mengontrol apakah sidebar dikunci (stay expanded setelah klik)
+    // State untuk mengontrol apakah sidebar dikunci (stay expanded setelah klik ikon kunci)
     const [isSidebarLocked, setIsSidebarLocked] = useState(() => {
         // Baca nilai 'sidebarLocked' dari localStorage saat komponen pertama kali mount
         // Menggunakan try...catch untuk keamanan jika localStorage tidak tersedia (misal: mode private Browse)
         try {
             const storedValue = localStorage.getItem('sidebarLocked');
-            // Jika ada nilai di localStorage, gunakan itu.
+            // Jika ada nilai di localStorage, gunakan itu (true jika stringnya 'true', false jika stringnya 'false' atau null/undefined)
             if (storedValue !== null) {
                 return storedValue === 'true';
             } else {
-                // Jika TIDAK ada nilai di localStorage, default ke true hanya jika di desktop.
-                // Deteksi awal isMobile di sini atau gunakan state isMobile setelah mount.
-                // Pendekatan sederhana: asumsikan desktop jika tidak ada nilai dan window ada
-                const initialIsMobile = typeof window !== 'undefined' ? window.innerWidth < 640 : false;
-                return !initialIsMobile; // Default to locked (true) if not mobile and no stored value
+                // Jika TIDAK ada nilai di localStorage, default ke true (terkunci) HANYA JIKA di desktop.
+                // Deteksi awal ukuran layar (mobile vs desktop) saat mount.
+                const initialIsMobile = typeof window !== 'undefined' ? window.innerWidth < 640 : false; // 640px adalah breakpoint 'sm' default
+                return !initialIsMobile; // Default to locked (true) if initially not mobile and no stored value
             }
         } catch (e) {
             console.error("Failed to read from localStorage:", e);
-            // Jika gagal membaca dari localStorage, default ke true hanya jika di desktop
+            // Jika gagal membaca dari localStorage, default ke true HANYA JIKA di desktop.
             const initialIsMobile = typeof window !== 'undefined' ? window.innerWidth < 640 : false;
-            return !initialIsMobile; // Default to locked (true) if not mobile on error
+            return !initialIsMobile; // Default to locked (true) if initially not mobile on error
         }
     });
 
     // State untuk mendeteksi apakah layar berukuran mobile (< sm)
+    // Inisialisasi awal client-side detection (typeof window !== 'undefined')
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false); // 640px adalah breakpoint 'sm' default
 
     // Ref untuk elemen sidebar (agar bisa pasang event listener)
     const sidebarRef = useRef(null);
 
+
     // === Efek & Handler untuk Perilaku Desktop (Hover/Click) dan Responsif ===
     useEffect(() => {
         const sidebarElement = sidebarRef.current;
-        if (!sidebarElement) return; // Pastikan elemen ada
+        if (!sidebarElement) return; // Pastikan elemen DOM sidebar sudah ada
 
         // Handler Mouse Enter (Desktop - hanya jika TIDAK terkunci)
         const handleMouseEnter = () => {
@@ -70,10 +97,12 @@ export default function AuthenticatedLayout({ header, children }) {
         // Handler Mouse Leave (Desktop - hanya jika TIDAK terkunci)
         const handleMouseLeave = () => {
             if (!isMobile && !isSidebarLocked) {
-                 // Tambahkan penundaan singkat untuk menghindari jank saat kursor cepat keluar
-                 // Atau tambahkan logika cek fokus di sini jika diperlukan penanganan keyboard focus
-                setTimeout(() => { // Contoh sederhana dengan penundaan
-                    if (!isSidebarLocked) { // Cek lagi setelah penundaan
+                 // Tambahkan penundaan singkat untuk menghindari jank saat kursor cepat keluar dari area sidebar
+                 // Ini memberi sedikit 'grace period' sebelum sidebar collapsed
+                 // Anda bisa sesuaikan nilai penundaan ini jika perlu
+                setTimeout(() => {
+                    // Cek kembali state isSidebarLocked setelah penundaan, karena user mungkin mengklik kunci saat penundaan
+                    if (!isSidebarLocked) {
                        setIsSidebarExpanded(false);
                     }
                 }, 50); // Penundaan 50ms
@@ -83,37 +112,45 @@ export default function AuthenticatedLayout({ header, children }) {
         // Handler Resize (Update isMobile state)
         const handleResize = () => {
             const mobile = window.innerWidth < 640;
+            const wasMobile = isMobile; // Simpan state mobile sebelumnya
             setIsMobile(mobile);
 
-            // Reset state desktop saat beralih ke mobile
-            if (mobile) {
-                setIsSidebarExpanded(false);
-                setIsSidebarLocked(false);
+            // Jika beralih DARI desktop KE mobile
+            if (!mobile && wasMobile) {
+                // Reset state desktop saat beralih ke mobile
+                setIsSidebarExpanded(false); // Pastikan collapsed di mobile
+                // State isSidebarLocked dibiarkan apa adanya (akan dimuat lagi saat kembali ke desktop)
                 // Tutup sidebar mobile jika terbuka saat resize ke desktop (jika perlu)
-                if (isMobileSidebarOpen) {
+                 if (isMobileSidebarOpen) {
                      setIsMobileSidebarOpen(false);
-                }
-            } else {
-                 // Jika beralih ke desktop:
-                 // Atur expanded sesuai state locked (yang sudah dimuat dari localStorage saat init)
+                 }
+            }
+            // Jika beralih DARI mobile KE desktop
+            else if (mobile && !wasMobile) {
+                 // Saat beralih ke desktop:
+                 // Atur expanded sesuai state locked (yang sudah dimuat dari localStorage saat init atau diubah user)
                  setIsSidebarExpanded(isSidebarLocked); // isSidebarExpanded mengikuti isSidebarLocked
                  // Tutup sidebar mobile jika terbuka saat resize dari mobile ke desktop
                  if (isMobileSidebarOpen) {
                       setIsMobileSidebarOpen(false);
                  }
             }
+            // Jika tetap di desktop ATAU tetap di mobile
+            // Tidak ada aksi khusus di sini, state isMobile sudah terupdate
         };
 
-        // === INISIALISASI AWAL UNTUK isMobile SETELAH KOMPONEN MOUNT ===
+        // === INISIALISASI AWAL UNTUK isMobile dan isSidebarExpanded SETELAH KOMPONEN MOUNT ===
         // Panggil handler resize sekali saat komponen mount untuk mengatur state isMobile awal
+        // dan state isSidebarExpanded awal berdasarkan isSidebarLocked
         handleResize(); // Call handleResize once on mount
 
         // --- Tambahkan Event Listeners ---
-        // Listener Mouse Hover/Leave hanya di desktop
+        // Listener Mouse Hover/Leave hanya di desktop (tidak ditambahkan jika isMobile true)
+        // Listener akan ditambahkan/dihapus ulang saat [isMobile] berubah di dependency array
         if (!isMobile) {
              sidebarElement.addEventListener('mouseenter', handleMouseEnter);
              sidebarElement.addEventListener('mouseleave', handleMouseLeave);
-             // Event listeners untuk focus/blur pada elemen di dalam sidebar (jika diperlukan)
+             // Event listeners untuk focus/blur pada elemen di dalam sidebar (jika diperlukan penanganan keyboard)
              // Memerlukan logika yang lebih kompleks untuk mendeteksi fokus di dalam elemen sidebar
         }
         // Listener Resize di seluruh window
@@ -121,6 +158,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
 
         // --- Cleanup Event Listeners ---
+        // Fungsi cleanup akan dijalankan saat komponen unmount atau saat dependencies effect berubah
         return () => {
             if (sidebarElement) {
                  sidebarElement.removeEventListener('mouseenter', handleMouseEnter);
@@ -131,7 +169,7 @@ export default function AuthenticatedLayout({ header, children }) {
     }, [isMobile, isSidebarLocked]); // Re-run effect jika isMobile atau isSidebarLocked berubah
 
 
-    // Fungsi untuk men-toggle tampilan sidebar mobile (dari top bar mobile/ikon X)
+    // Fungsi untuk men-toggle tampilan sidebar mobile (dari tombol burger/ikon X)
     const toggleMobileSidebar = () => {
         setIsMobileSidebarOpen((prevState) => !prevState);
     };
@@ -140,9 +178,9 @@ export default function AuthenticatedLayout({ header, children }) {
     const toggleSidebarLock = () => {
         const nextLockedState = !isSidebarLocked;
         setIsSidebarLocked(nextLockedState);
-        // TAMBAHKAN BARIS INI UNTUK MENYIMPAN KE localStorage
+        // === TAMBAHKAN BARIS INI UNTUK MENYIMPAN STATE TERKUNCI KE localStorage ===
         // Simpan status terkunci baru (dalam bentuk string 'true' atau 'false') ke localStorage
-        // Menggunakan try...catch untuk keamanan
+        // Menggunakan try...catch untuk keamanan jika localStorage tidak tersedia
         try {
              localStorage.setItem('sidebarLocked', nextLockedState.toString());
         } catch (e) {
@@ -153,7 +191,7 @@ export default function AuthenticatedLayout({ header, children }) {
     };
 
 
-    // === Menentukan Class untuk Sidebar ===
+    // === Menentukan Class untuk Sidebar (Desktop & Mobile) ===
     // Class dinamis berdasarkan state mobile, isMobileSidebarOpen (mobile), dan isSidebarExpanded (desktop)
     const sidebarClasses = `
         fixed inset-y-0 left-0 z-50 border-r border-gray-200 flex flex-col h-screen overflow-y-auto transition-transform ease-in-out duration-300
@@ -164,44 +202,46 @@ export default function AuthenticatedLayout({ header, children }) {
 
         // --- Mobile (< sm) ---
         ${isMobile ? 'w-64' : 'sm:w-auto'} /* Lebar saat terbuka di mobile */
-        ${isMobile ? (isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'sm:translate-x-0 sm:relative'} /* Toggle mobile & Positioning desktop */
+        ${isMobile ? (isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full') : 'sm:translate-x-0 sm:relative'} /* Toggle mobile (muncul/sembunyi) & Positioning desktop (relative agar konten utama bergeser) */
 
         // --- Desktop (sm+) ---
         ${isMobile ? '' : (isSidebarExpanded ? 'sm:w-64' : 'sm:w-20')} /* Lebar dinamis di desktop (Expanded vs Collapsed) */
-        ${isMobile ? '' : (isSidebarExpanded ? '' : 'sm:overflow-hidden')} /* Sembunyikan overflow saat collapsed desktop */
+        ${isMobile ? '' : (isSidebarExpanded ? '' : 'sm:overflow-hidden')} /* Sembunyikan overflow (teks/ikon) saat collapsed desktop */
     `; // Sesuaikan sm:w-20 (lebar mini) dan sm:w-64 (lebar penuh) desktop
 
 
-     // === Menentukan Class untuk Margin Konten Utama ===
-     // Margin kiri dinamis berdasarkan state desktop expanded
+     // === Menentukan Class untuk Margin Konten Utama (Desktop Only) ===
+     // Margin kiri dinamis agar konten utama tidak tertutup sidebar desktop
      const mainContentClasses = `
          flex-1 flex flex-col overflow-y-auto /* padding konten & scroll */
-         // --- Margin Kiri Dinamis ---
-         ${isMobile ? 'ml-0' : (isSidebarExpanded ? 'sm:ml-0' : 'sm:ml-0')} /* Margin kiri 0 mobile, dinamis desktop */
-     `; // Sesuaikan sm:ml-20 dan sm:ml-64 sesuai lebar sidebar
+         // --- Margin Kiri Dinamis (Hanya di Desktop) ---
+         ${isMobile ? 'ml-0' : (isSidebarExpanded ? 'sm:ml-0' : 'sm:ml-20')} /* Margin kiri 0 mobile, ikuti lebar sidebar di desktop */
+     `; // Sesuaikan sm:ml-20 dan sm:ml-64 sesuai lebar mini/penuh sidebar desktop
 
 
-    // State expanded yang di-pass ke NavLink/ResponsiveNavLink (untuk kontrol visibilitas teks/ikon)
-    // True jika mobile sidebar terbuka ATAU jika desktop sidebar expanded
+    // State expanded yang di-pass ke komponen NavLink (untuk kontrol visibilitas teks/ikon)
+    // NavLink akan expanded (teks terlihat) jika mobile sidebar terbuka ATAU jika desktop sidebar expanded
     const isNavExpanded = isMobile ? isMobileSidebarOpen : isSidebarExpanded;
 
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="flex min-h-screen bg-gray-100"> {/* Container utama flex */}
 
             {/* === Sidebar Kiri === */}
-            {/* Pasang ref dan event listener untuk hover/leave di desktop */}
+            {/* Pasang ref untuk mendapatkan elemen DOM sidebar */}
+            {/* Pasang className dinamis */}
             <div ref={sidebarRef} className={sidebarClasses}>
 
                 {/* Bagian Header Sidebar (Logo/Nama Aplikasi & Pengunci) */}
-                {/* Sesuaikan padding & penempatan agar logo/teks terlihat di kedua mode desktop */}
-                {/* Menggunakan flex items-center justify-between untuk menata logo/nama dan pengunci */}
+                {/* Container flex untuk menata item di header sidebar */}
                 <div className="flex shrink-0 items-center px-4 py-6 border-b border-gray-200 justify-between">
                     <div className="flex items-center"> {/* Container untuk Logo dan Nama */}
-                        {/* Logo: Posisi dan warna ikon disesuaikan */}
-                        <ApplicationLogo className={`block h-9 w-auto fill-current text-gray-800 ${isNavExpanded ? 'mr-3' : (!isMobile ? 'sm:mr-3' : 'mr-3')}`} /> {/* <--- Ubah sm:mx-auto menjadi sm:mr-3 */}
-                        {/* Nama aplikasi: Disembunyikan saat collapsed desktop */}
-                         {isNavExpanded && !isMobile && (
+                        {/* Logo Aplikasi: Gunakan komponen ApplicationLogo Anda */}
+                        {/* Sesuaikan margin/penempatan agar terlihat baik di kedua mode desktop */}
+                        {/* isNavExpanded mengontrol apakah sidebar sedang dalam mode expanded (baik mobile atau desktop) */}
+                        <ApplicationLogo className={`block h-9 w-auto fill-current text-gray-800 ${isNavExpanded ? 'mr-3' : 'sm:mr-3'}`} /> {/* Sesuaikan styling logo */}
+                        {/* Nama aplikasi: Disembunyikan saat sidebar collapsed di desktop */}
+                         {isNavExpanded && !isMobile && ( // Tampilkan teks nama aplikasi hanya jika sidebar expanded DAN bukan di mobile
                              <span className="text-xl font-semibold text-gray-800 mr-3">SITARUNA</span>
                          )}
                     </div>
@@ -209,57 +249,61 @@ export default function AuthenticatedLayout({ header, children }) {
                     {/* === Kontrol Pengunci Sidebar (Desktop Only) === */}
                     {/* Tampil hanya di desktop (!isMobile) */}
                     {!isMobile && (
-                         <div className={`flex items-center ml-auto ${!isSidebarExpanded ? 'sm:-mr-4' : ''}`}>
+                         // Container flex untuk tombol pengunci
+                         <div className={`flex items-center ml-auto ${!isSidebarExpanded ? 'sm:-mr-4' : ''}`}> {/* ml-auto untuk dorong ke kanan, -mr-4 untuk geser sedikit ke kiri saat collapsed */}
                              {/* Checkbox input asli (tersembunyi secara visual) */}
                              {/* ID sidebar-lock-toggle menghubungkan input ini dengan label di bawahnya */}
-                             {/* Menggunakan class sr-only untuk menyembunyikan */}
+                             {/* Menggunakan class sr-only (screen reader only) untuk menyembunyikan secara visual */}
                              <input
                                  type="checkbox"
                                  id="sidebar-lock-toggle"
-                                 checked={isSidebarLocked}
-                                 onChange={toggleSidebarLock}
-                                 className="sr-only"
+                                 checked={isSidebarLocked} // Checked state mengikuti state isSidebarLocked
+                                 onChange={toggleSidebarLock} // Panggil handler saat status checkbox berubah
+                                 className="sr-only" // Sembunyikan input asli
                              />
-                             {/* Label yang berfungsi sebagai area klik for toggle (ikon kunci) */}
+                             {/* Label yang berfungsi sebagai area klik untuk toggle (menggunakan ikon kunci) */}
+                             {/* htmlFor harus sama dengan ID input checkbox */}
                              <label
                                  htmlFor="sidebar-lock-toggle"
-                                 className="flex items-center cursor-pointer text-gray-600 hover:text-gray-800 shrink-0 px-2 py-1 rounded-md hover:bg-gray-200 transition-colors duration-200 mr-3"
+                                 className="flex items-center cursor-pointer text-gray-600 hover:text-gray-800 shrink-0 px-2 py-1 rounded-md hover:bg-gray-200 transition-colors duration-200 mr-3" // Styling label (ikon)
                              >
+                                 {/* Tampilkan ikon kunci sesuai state terkunci */}
                                  {isSidebarLocked ? <IconLock size={20} strokeWidth={1.5} /> : <IconLockOpen size={20} strokeWidth={1.5} />}
                              </label>
                          </div>
                     )}
 
 
-                    {/* Tombol Tutup Sidebar (Hanya di Mobile, saat Sidebar terbuka) */}
-                    {isMobile && isMobileSidebarOpen && (
+                    {/* Tombol Tutup Sidebar Mobile (Hanya di Mobile, saat Sidebar terbuka) */}
+                    {isMobile && isMobileSidebarOpen && ( // Tampilkan hanya jika di mobile DAN sidebar mobile terbuka
                          <button
-                             onClick={toggleMobileSidebar}
-                             className="p-1 rounded-md text-gray-600 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 ml-auto"
+                             onClick={toggleMobileSidebar} // Panggil handler untuk menutup sidebar mobile
+                             className="p-1 rounded-md text-gray-600 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 ml-auto" // Styling tombol X
                          >
-                              <IconX size={24} strokeWidth={1.5} />
+                              <IconX size={24} strokeWidth={1.5} /> {/* Ikon X */}
                          </button>
                     )}
-                </div>
+                </div> {/* === Akhir Header Sidebar === */}
 
-                {/* Bagian Navigasi Sidebar */}
+                {/* Bagian Navigasi Utama di Sidebar */}
+                {/* Menggunakan komponen NavLink untuk setiap item menu */}
                 <nav className="flex flex-col flex-1 px-2 py-4 space-y-1">
-                    {/* Menggunakan komponen NavLink */}
-                    {/* Pass state expanded dan mobile */}
-
-                    {/* Contoh NavLink Dashboard */}
+                    {/* NavLink Dashboard */}
                     <NavLink
-                        href={route('dashboard')}
-                        active={route().current('dashboard')}
-                        isSidebarExpanded={isNavExpanded} // Pass combined state
+                        href={route('dashboard')} // Link ke route dashboard
+                        active={route().current('dashboard')} // Penanda aktif jika route saat ini adalah dashboard
+                        isSidebarExpanded={isNavExpanded} // Pass state expanded ke NavLink (untuk kontrol visibilitas teks)
                         isMobile={isMobile} // Pass state mobile
                         icon={IconDashboard} // Contoh prop ikon
                     >
-                        Dashboard {/* Children (teks label) */}
+                        Dashboard {/* Children (teks label menu) */}
                     </NavLink>
 
+                    {/* === Contoh NavLink untuk Modul lain dengan Permission Check === */}
+                    {/* Pastikan Anda mengimpor utility hasAnyPermission dan objek 'auth' sudah tersedia */}
+
                     {/* NavLink Roles */}
-                    {hasAnyPermission(['roles index']) &&
+                    {auth.user && hasAnyPermission(['roles index']) && ( // Tampilkan hanya jika user login DAN punya permission 'roles index'
                          <NavLink
                             href={route('roles.index')}
                             active={route().current('roles.index')}
@@ -269,28 +313,34 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             Roles
                         </NavLink>
-                    }
-                    {/* Ulangi untuk Permissions, Users, dll. */}
-                     {hasAnyPermission(['permissions index']) &&
-                         <NavLink href={route('permissions.index')} active={route().current('permissions.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconShield}>Permissions</NavLink>
-                    }
-                     {hasAnyPermission(['users index']) &&
-                         <NavLink href={route('users.index')} active={route().current('users.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconList}>Users</NavLink>
-                    }
+                    )}
+                    {/* NavLink Permissions */}
+                     {auth.user && hasAnyPermission(['permissions index']) && ( // Tampilkan hanya jika user login DAN punya permission 'permissions index'
+                         <NavLink
+                            href={route('permissions.index')}
+                            active={route().current('permissions.index')}
+                            isSidebarExpanded={isNavExpanded}
+                            isMobile={isMobile}
+                            icon={IconShield}
+                         >
+                            Permissions
+                         </NavLink>
+                     )}
+                    {/* NavLink Users */}
+                     {auth.user && hasAnyPermission(['users index']) && ( // Tampilkan hanya jika user login DAN punya permission 'users index'
+                         <NavLink
+                            href={route('users.index')}
+                            active={route().current('users.index')}
+                            isSidebarExpanded={isNavExpanded}
+                            isMobile={isMobile}
+                            icon={IconList}
+                         >
+                            Users
+                         </NavLink>
+                     )}
 
-                     {/* Opsi: Tautan Profil/Logout di Bawah Sidebar (Jika perlu di mobile) */}
-                     {/* Jika Anda ingin link Profile/Logout di bagian bawah sidebar *hanya di mobile*,
-                         aktifkan bagian ini dan pastikan dibungkus kondisi {isMobile && (...) }.
-                         Jika profile dropdown selalu di header di semua ukuran, hapus bagian ini. */}
-                     {/* {isMobile && (
-                         <div className="mt-auto border-t border-gray-200 p-4">
-                             <NavLink href={route('profile.edit')} isSidebarExpanded={isNavExpanded} isMobile={isMobile}>Profile</NavLink>
-                             <NavLink method="post" href={route('logout')} as="button" isSidebarExpanded={isNavExpanded} isMobile={isMobile}>Log Out</NavLink>
-                         </div>
-                     )} */}
-
-                     {/* === INI BLOK KODE MENU PESERTA DIDIK YANG DIMAKSUD === */}
-                     {hasAnyPermission(['students index']) && // Sesuaikan permission
+                     {/* === NavLink untuk Modul Peserta Didik (Sudah ada) === */}
+                     {auth.user && hasAnyPermission(['students index']) && ( // Tampilkan hanya jika user login DAN punya permission 'students index'
                          <NavLink
                             href={route('students.index')} // Link ke route index students
                             active={route().current('students.index')} // Cek apakah route saat ini adalah index students
@@ -300,10 +350,11 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             Peserta Didik {/* Teks menu */}
                         </NavLink>
-                     }
-                     
-                     {/* Tampilkan hanya jika user punya permission 'majors index' */}
-                     {auth.user && hasAnyPermission(['majors index']) && ( // Cek permission 'majors index'
+                     )}
+                     {/* ============================================== */}
+
+                     {/* === NavLink untuk Modul Jurusan (Baru Ditambahkan) === */}
+                     {auth.user && hasAnyPermission(['majors index']) && ( // Tampilkan hanya jika user login DAN punya permission 'majors index'
                          <NavLink
                             href={route('majors.index')} // Link ke route 'majors.index'
                             active={route().current('majors.index')} // Cek apakah route saat ini adalah 'majors.index'
@@ -314,62 +365,91 @@ export default function AuthenticatedLayout({ header, children }) {
                             Jurusan {/* Teks menu */}
                         </NavLink>
                      )}
+                     {/* ============================================= */}
 
-                </nav>
+                    {/* === Opsi: Tautan Profil/Logout di Bawah Sidebar (Jika perlu di mobile) === */}
+                    {/* Jika Anda ingin link Profile/Logout di bagian bawah sidebar *hanya di mobile*,
+                        aktifkan bagian ini dan pastikan dibungkus kondisi {isMobile && (...) }.
+                        Jika profile dropdown selalu di header (seperti implementasi di sini), bagian ini bisa dihapus. */}
+                     {/* {isMobile && (
+                         <div className="mt-auto border-t border-gray-200 p-4"> // mt-auto untuk dorong ke bawah, border-t untuk garis di atas
+                             <ResponsiveNavLink href={route('profile.edit')} isSidebarExpanded={isNavExpanded} isMobile={isMobile}>Profile</ResponsiveNavLink>
+                             <ResponsiveNavLink method="post" href={route('logout')} as="button" isSidebarExpanded={isNavExpanded} isMobile={isMobile}>Log Out</ResponsiveNavLink>
+                         </div>
+                     )} */}
+                    {/* ====================================================================== */}
+
+                    {/* Tambahkan NavLink untuk modul lain di sini (Tahun Ajaran, Semester, Kelas, Enrollment, dll) */}
+                    {/* Contoh: */}
+                    {/* {auth.user && hasAnyPermission(['academic_years index']) && (
+                         <NavLink href={route('academic_years.index')} active={route().current('academic_years.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconCalendar}>Tahun Ajaran</NavLink>
+                     )} */}
+                    {/* {auth.user && hasAnyPermission(['semesters index']) && (
+                         <NavLink href={route('semesters.index')} active={route().current('semesters.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconCalendarStats}>Semester</NavLink>
+                     )} */}
+                     {/* {auth.user && hasAnyPermission(['classes index']) && (
+                         <NavLink href={route('classes.index')} active={route().current('classes.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconListDetails}>Kelas</NavLink>
+                     )} */}
+                     {/* {auth.user && hasAnyPermission(['enrollments index']) && (
+                         <NavLink href={route('enrollments.index')} active={route().current('enrollments.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconSchool}>Enrollment</NavLink>
+                     )} */}
+
+
+                </nav> {/* === Akhir Bagian Navigasi === */}
 
             </div> {/* === Akhir Sidebar Kiri === */}
 
             {/* === Overlay Mobile === */}
-            {/* Muncul saat mobile sidebar terbuka */}
-            {isMobile && isMobileSidebarOpen && (
+            {/* Muncul saat mobile sidebar terbuka untuk menutup konten utama */}
+            {/* Klik pada overlay akan menutup sidebar mobile */}
+            {isMobile && isMobileSidebarOpen && ( // Tampilkan overlay hanya jika di mobile DAN sidebar mobile terbuka
                 <div
-                    className="fixed inset-0 z-40 bg-black bg-opacity-25"
-                    onClick={toggleMobileSidebar}
+                    className="fixed inset-0 z-40 bg-black bg-opacity-25" // Fixed position, cover screen, z-index di bawah sidebar, background semi-transparan
+                    onClick={toggleMobileSidebar} // Menutup sidebar mobile saat overlay diklik
                 ></div>
-            )}
+            )} {/* === Akhir Overlay Mobile === */}
+
 
             {/* === Area Konten Utama === */}
-            {/* Margin kiri dinamis berdasarkan state expanded desktop */}
+            {/* Margin kiri dinamis agar konten utama tidak tertutup sidebar desktop */}
+            {/* Gunakan className dinamis */}
             <div className={mainContentClasses}>
 
-                {/* === Top Bar di Area Konten Utama (Header) === */}
+                {/* === Top Bar di Area Konten Utama (Header Halaman) === */}
                 {/* Mengandung Tombol Toggle Sidebar Mobile, Judul Halaman, & Profil User */}
-                <header className="w-full bg-white shadow">
-                     <div className="flex items-center px-4 py-6 sm:px-6 lg:px-8">
+                <header className="w-full bg-white shadow"> {/* Background putih, shadow di bawah */}
+                     <div className="flex items-center px-4 py-6 sm:px-6 lg:px-8"> {/* Padding horizontal responsif */}
 
                          {/* Tombol Buka Sidebar Mobile (Hanya di Mobile) */}
-                         {isMobile && (
+                         {isMobile && ( // Tampilkan tombol ini hanya jika di mobile
                             <button
-                                onClick={toggleMobileSidebar} // Memanggil toggleMobileSidebar untuk membuka sidebar mobile
-                                className="-ms-2 mr-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                                onClick={toggleMobileSidebar} // Panggil handler untuk membuka sidebar mobile
+                                className="-ms-2 mr-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none" // Styling tombol
                             >
-                                 <IconMenu2 size={24} strokeWidth={1.5} />
+                                 <IconMenu2 size={24} strokeWidth={1.5} /> {/* Ikon burger */}
                             </button>
                          )}
 
-                         {/* Tombol Toggle Sidebar Desktop (Panah) DIHAPUS DARI SINI */}
-                         {/* {!isMobile && ( ... tombol panah lama ... )} */}
-
-
-                        {/* Slot Header Halaman */}
-                         <div className="flex-1 px-2 sm:px-0">
+                        {/* Slot Judul Halaman */}
+                         <div className="flex-1 px-2 sm:px-0"> {/* flex-1 agar memenuhi ruang, padding horizontal */}
+                             {/* Konten dari prop 'header' halaman akan dirender di sini */}
                              {header}
                          </div>
 
                         {/* Pengaturan Pengguna (Molekul Dropdown) */}
                         {/* === Ini di HEADER Area Konten Utama === */}
                         {/* Tampil di semua ukuran dalam implementasi ini */}
-                        <div className="ml-auto"> {/* ml-auto untuk dorong ke kanan */}
-                             <Dropdown align="right" width="48">
+                        <div className="ml-auto"> {/* ml-auto untuk dorong ke kanan maksimal */}
+                             <Dropdown align="right" width="48"> {/* Gunakan komponen Dropdown Anda */}
                                  {/* Trigger Dropdown: Tombol dengan nama user dan ikon panah */}
-                                  <Dropdown.Trigger>
+                                  <Dropdown.Trigger> {/* Gunakan komponen Trigger Dropdown Anda */}
                                      <span className="inline-flex rounded-md">
                                          <button
                                              type="button"
-                                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150" // Styling tombol trigger (nama user)
                                          >
                                              {/* Menampilkan nama user yang sedang login */}
-                                             {user.name}
+                                             {user ? user.name : 'Guest'} {/* Tampilkan nama user jika ada */}
 
                                              {/* Ikon panah dropdown */}
                                              <svg
@@ -389,14 +469,16 @@ export default function AuthenticatedLayout({ header, children }) {
                                   </Dropdown.Trigger>
 
                                  {/* Konten Dropdown: Link Profil dan Logout */}
-                                  <Dropdown.Content>
+                                  <Dropdown.Content> {/* Gunakan komponen Content Dropdown Anda */}
+                                     {/* Link ke halaman Profile */}
                                      <Dropdown.Link href={route('profile.edit')}>
                                          Profile
                                      </Dropdown.Link>
+                                     {/* Link untuk Logout */}
                                      <Dropdown.Link
                                          href={route('logout')}
-                                         method="post"
-                                         as="button" // Penting untuk logout via POST
+                                         method="post" // Penting untuk logout via POST
+                                         as="button" // Render sebagai tombol agar bisa disubmit via POST
                                      >
                                          Log Out
                                      </Dropdown.Link>
@@ -405,22 +487,23 @@ export default function AuthenticatedLayout({ header, children }) {
                          </div>
 
                     </div>
-                </header>
+                </header> {/* === Akhir Top Bar (Header Area Konten) === */}
 
-                {/* Page Main Content Slot */}
-                <main className="flex-1 overflow-y-auto">
+                {/* Slot Konten Utama Halaman */}
+                {/* Di sinilah prop 'children' (konten halaman spesifik) akan dirender */}
+                <main className="flex-1 overflow-y-auto"> {/* flex-1 agar mengambil sisa ruang vertikal, overflow-y-auto agar bisa scroll jika konten melebihi tinggi */}
                     {children}
-                </main>
+                </main> {/* === Akhir Konten Utama === */}
 
                 {/* Footer Minimal (Hanya Copyright) */}
                 {/* Gunakan tag footer dan kelas styling dasar */}
                 <footer className="bg-white py-4 text-center mt-8"> {/* Contoh kelas: background putih, padding atas/bawah, teks di tengah, margin atas */}
                     {/* Gunakan container yang sesuai dengan layout Anda (misal, dari komponen Container atau div bawaan) */}
-                    {/* Asumsi layout Anda menggunakan max-w-7xl mx-auto px-4/px-6/px-8 */}
-                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                        {/* Konten copyright dari Welcome.jsx */}
+                    {/* Asumsi layout Anda menggunakan max-w-7xl mx-auto px-4/px-6/px-8 untuk konten utamanya */}
+                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8"> {/* Sesuaikan container footer jika perlu */}
+                        {/* Konten copyright */}
                         {/* Sesuaikan kelas styling jika perlu agar cocok dengan tampilan layout Anda */}
-                        <div className="border-top pt-4"> {/* Gunakan kelas border-top dan padding atas jika styling diinginkan */}
+                        <div className="border-t border-gray-200 pt-4"> {/* Gunakan kelas border-t dan padding atas jika styling diinginkan */}
                             <p className="text-gray-600 text-sm"> {/* Contoh kelas untuk warna dan ukuran teks */}
                                 {/* Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. */}
                                 Copyright &copy;{new Date().getFullYear()} All rights reserved | made with <IconHeart size={16} strokeWidth={1.5} className="inline-block align-text-bottom" /> by <a href="https://t.me/jhanplv" target="_blank" className="text-blue-600 hover:underline" >jipi</a> @RPL SMKN 2 Subang {/* Ganti dengan teks kontribusi Anda */}
@@ -428,20 +511,21 @@ export default function AuthenticatedLayout({ header, children }) {
                             </p>
                         </div>
                     </div>
-                </footer>
+                </footer> {/* === Akhir Footer === */}
 
-            </div> {/* End Main Content Area */}
+            </div> {/* === Akhir Area Konten Utama === */}
 
-            {/* Konten Navigasi Responsif Asli - DIHAPUS */}
-            
-        </div>
-        
+            {/* Konten Navigasi Responsif Asli (jika sebelumnya ada di sini) - DIHAPUS */}
+            {/* Implementasi sekarang menggunakan toggle sidebar utama */}
+            {/* === Akhir Container Utama Flex === */}
+        </div> 
+
     );
 }
 
-// --- Pastikan NavLink.jsx sudah diupdate dengan styling dan isSidebarExpanded prop ---
-// --- Pastikan ResponsiveNavLink.jsx juga diupdate warnanya jika masih digunakan ---
-// --- Pastikan semua ikon yang digunakan (IconMenu2, IconX, IconLock, IconLockOpen, dan ikon di NavLinks) diimpor di AuthenticatedLayout.jsx ---
-// Example icon imports (add to the top import section):
-// import { IconDashboard, IconUsers, IconShield, IconList } from '@tabler/icons-react'; // Icons for NavLinks
-// import { IconMenu2, IconX, IconLock, IconLockOpen } from '@tabler/icons-react'; // Icons for toggle and lock
+// --- Catatan Tambahan ---
+// - Pastikan komponen NavLink.jsx dan ResponsiveNavLink.jsx (jika digunakan) sudah diupdate dengan styling dan menerima prop isSidebarExpanded dan isMobile.
+// - Pastikan semua ikon dari @tabler/icons-react yang digunakan diimpor di bagian atas file ini.
+// - Pastikan komponen ApplicationLogo, Dropdown (Trigger, Content, Link), Container, Card, FormGroup, TextInput, PrimaryButton, CancelButton, dll. Anda sudah ada dan berfungsi.
+// - Utility hasAnyPermission.js harus bisa mengakses user login (misal, dengan menggunakan usePage().props.auth.user di dalamnya).
+// - File ini hanya layout; konten spesifik setiap halaman (tabel, form, detail) datang dari prop 'children' yang dirender di dalam tag <main>.

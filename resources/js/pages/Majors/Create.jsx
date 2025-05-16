@@ -93,7 +93,7 @@ export default function Create({auth}) { // Terima prop 'auth' dari Inertia (unt
                                 value={data.nama_jurusan} // Ambil nilai dari state 'data' useForm
                                 onChange={e => setData('nama_jurusan', e.target.value)} // Update state 'data' saat input berubah
                                 placeholder="Input Nama Jurusan.." // Teks placeholder di input field
-                                className="mt-1 block w-full" // Kelas styling Anda
+                                className="mt-1 block w-full capitalize" // Kelas styling Anda
                                 // Props lain jika ada (misal: required, disabled, dll.)
                             />
                         </FormGroup>
