@@ -43,5 +43,11 @@ class PermissionsTableSeeder extends Seeder
         Permission::create(['name' => 'majors create', 'guard_name' => 'web']);
         Permission::create(['name' => 'majors edit', 'guard_name' => 'web']);
         Permission::create(['name' => 'majors delete', 'guard_name' => 'web']);
+
+        // permission academic_years
+        Permission::create(['name' => 'academic-years index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'academic-years create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'academic-years edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'academic-years delete', 'guard_name' => 'web']);
     }
 }

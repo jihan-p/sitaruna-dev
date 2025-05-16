@@ -26,7 +26,8 @@ import {
     IconList,      // Ikon List (contoh)
     IconUsersGroup, // Ikon Peserta Didik (contoh)
     IconBuildingSkyscraper, // Ikon Jurusan (contoh)
-    IconHeart // Ikon hati untuk footer
+    IconHeart, // Ikon hati untuk footer
+    IconCalendar
 } from '@tabler/icons-react';
 // ==============================================================
 
@@ -420,9 +421,9 @@ export default function AuthenticatedLayout({ user: authUser, header, children }
 
                     {/* Tambahkan NavLink untuk modul lain di sini (Tahun Ajaran, Semester, Kelas, Enrollment, dll) */}
                     {/* Contoh: */}
-                    {/* {auth.user && hasAnyPermission(['academic_years index']) && (
-                         <NavLink href={route('academic_years.index')} active={route().current('academic_years.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconCalendar}>Tahun Ajaran</NavLink>
-                     )} */}
+                    {auth.user && hasAnyPermission(['academic-years index']) && (
+                         <NavLink href={route('academic-years.index')} active={route().current('academic-years.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconCalendar}>Tahun Ajaran</NavLink>
+                     )}
                     {/* {auth.user && hasAnyPermission(['semesters index']) && (
                          <NavLink href={route('semesters.index')} active={route().current('semesters.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconCalendarStats}>Semester</NavLink>
                      )} */}
