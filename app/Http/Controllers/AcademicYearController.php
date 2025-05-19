@@ -95,7 +95,7 @@ class AcademicYearController extends Controller
 
 
         // Redirect ke halaman index setelah berhasil menyimpan
-        return redirect()->route('academic_years.index')
+        return redirect()->route('academic-years.index')
                          ->with('success', 'Data Tahun Ajaran berhasil ditambahkan.'); // Opsional: Kirim flash message
     }
 
@@ -165,7 +165,7 @@ class AcademicYearController extends Controller
 
 
         // Redirect ke halaman index setelah berhasil mengupdate
-         return redirect()->route('academic_years.index')
+         return redirect()->route('academic-years.index')
                           ->with('success', 'Data Tahun Ajaran berhasil diperbarui.'); // Opsional: Kirim flash message
     }
 
@@ -185,7 +185,7 @@ class AcademicYearController extends Controller
         // ==================
 
         // Redirect kembali ke halaman index setelah berhasil menghapus
-        return redirect()->route('academic_years.index')
+        return redirect()->route('academic-years.index')
                          ->with('success', 'Data Tahun Ajaran berhasil dihapus.'); // Opsional: Kirim flash message
     }
 }

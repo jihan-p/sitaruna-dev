@@ -9,24 +9,35 @@ import FormGroup from '@/components/molecules/FormGroup';
 import SubmitButton from '@/components/molecules/SubmitButton';
 import CancelButton from '@/components/molecules/CancelButton';
 
-export default function Create({ auth }) {
-    const { data, setData, post, processing, errors } = useForm({
+export default function Edit({ auth, academicYear }) {
+    const { data, setData, put, processing, errors } = useForm({
         nama_tahun_ajaran: '',
         tahun_mulai: '',
         tahun_selesai: '',
     });
 
+    // Use useEffect to populate the form when the academicYear prop changes
+    React.useEffect(() => {
+        if (academicYear) {
+            setData({
+                nama_tahun_ajaran: academicYear.nama_tahun_ajaran,
+                tahun_mulai: academicYear.tahun_mulai,
+                tahun_selesai: academicYear.tahun_selesai,
+            });
+        }
+    }, [academicYear]); // Rerun this effect when academicYear prop changes
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('academic-years.store'));
+        put(route('academic-years.update', academicYear.id));
     };
 
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Tambah Tahun Ajaran</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Edit Tahun Ajaran</h2>}
         >
-            <Head title="Tambah Tahun Ajaran" />
+            <Head title="Edit Tahun Ajaran" />
 
             <Container>
                 <Card>
@@ -75,7 +86,7 @@ export default function Create({ auth }) {
 
                         <div className="flex items-center justify-end gap-4">
                             <CancelButton href={route('academic-years.index')} />
-                            <SubmitButton processing={processing}>Simpan</SubmitButton>
+                            <SubmitButton processing={processing}>Perbarui</SubmitButton>
                         </div>
                     </form>
                 </Card>
