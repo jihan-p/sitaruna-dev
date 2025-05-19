@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear; // === Import Model AcademicYear ===
 use Illuminate\Http\Request;
 use Inertia\Inertia; // === Import Inertia ===
-use Illuminate\Support\Facades\Gate; // Opsional: Jika menggunakan Gate untuk otorisasi
-use Spatie\Permission\Exceptions\PermissionDoesNotExist; // Opsional: Jika menggunakan Spatie Permission
+use Illuminate\Routing\Controllers\Middleware;
+use Spatie\Permission\Models\Permission;
+use Illuminate\Routing\Controllers\HasMiddleware;
 
-class AcademicYearController extends Controller
+
+class AcademicYearController extends Controller implements HasMiddleware
 {
     // === Tambahkan Middleware Permission di sini jika Anda menggunakan Spatie ===
     public static function middleware()
