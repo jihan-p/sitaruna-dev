@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission; // Import model Permission dari Spatie
-use Spatie\Permission\Models\Role; // Import model Role jika perlu untuk penugasan permission ke role
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role; // Pastikan Role diimpor di sini
 
 class PermissionsTableSeeder extends Seeder
 {
@@ -18,7 +18,6 @@ class PermissionsTableSeeder extends Seeder
         // Ini penting agar permission yang baru ditambahkan/diperbarui langsung dikenali
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Guard name yang digunakan (sesuaikan jika Anda menggunakan guard lain selain 'web')
         $guardName = 'web';
 
         // === Definisikan Permissions untuk Setiap Modul dalam Array ===
@@ -92,7 +91,7 @@ class PermissionsTableSeeder extends Seeder
             $majorPermissions,
             $academicYearPermissions,
             $semesterPermissions
-            // Gabungkan semua array permission di sini
+            // Gabungkan semua array permission modul lain di sini
         );
 
 
@@ -103,27 +102,57 @@ class PermissionsTableSeeder extends Seeder
             $permission = Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => $guardName]);
             echo "Permission '{$permission->name}' ({$permission->guard_name}) ensured.\n"; // Log konfirmasi
         }
-        // ======================================================
+        echo "Finished seeding permissions.\n";
 
 
-        // === Tambahkan Penugasan Role/Permission di sini (Opsional) ===
-        // Contoh: Menugaskan semua permission yang baru dibuat/ditemukan ke role 'admin'
+        // === Tambahkan Penugasan Role/Permission di sini ===
+        // Contoh: Berikan semua permission yang baru dibuat/ditemukan ke role 'admin'
+
         // Pastikan RolesTableSeeder dijalankan SEBELUM PermissionsTableSeeder di DatabaseSeeder.php
         // jika Anda menugaskan permission di sini.
 
-        // $adminRole = Role::firstWhere('name', 'admin'); // Ambil role admin
-        // if ($adminRole) {
-        //     // Ambil permission yang baru saja dibuat/ditemukan
-        //     // Gunakan whereIn dengan array $allPermissions atau ambil semua permission lagi
-        //     $permissionsToAssign = Permission::whereIn('name', $allPermissions)->where('guard_name', $guardName)->get();
-        //     if ($permissionsToAssign->isNotEmpty()) {
-        //          $adminRole->syncPermissions($permissionsToAssign); // Sinkronkan semua permission ke role admin
-        //          echo "All permissions synced to role 'admin'.\n"; // Log konfirmasi
+        echo "Assigning permissions to roles...\n"; // Log
+
+        $adminRole = Role::firstWhere('name', 'admin'); // Ambil role admin menggunakan firstWhere
+
+        if ($adminRole) {
+            // Ambil semua permission yang baru saja dibuat/ditemukan untuk guard yang sama
+            $permissionsToAssign = Permission::whereIn('name', $allPermissions) // Ambil permission berdasarkan nama dari array $allPermissions
+                                             ->where('guard_name', $guardName)
+                                             ->get();
+
+            if ($permissionsToAssign->isNotEmpty()) {
+                 // syncPermissions akan menimpa permission yang ada dengan daftar baru.
+                 // Jika Anda hanya ingin menambahkan permission baru tanpa menghapus yang lama, gunakan givePermissionTo($permissionsToAssign);
+                 $adminRole->syncPermissions($permissionsToAssign);
+                 echo "All permissions ({$permissionsToAssign->count()}) synced to role '{$adminRole->name}'.\n"; // Log konfirmasi
+            } else {
+                 echo "Warning: No permissions found to sync to role '{$adminRole->name}'.\n"; // Log jika tidak ada permission
+            }
+        } else {
+             echo "Warning: Role 'admin' not found. Cannot assign permissions.\n"; // Log jika role admin tidak ditemukan
+        }
+
+        // === Contoh Penugasan permission spesifik ke role lain (misal: user) ===
+        // $userRole = Role::firstWhere('name', 'user');
+        // if ($userRole) {
+        //     $userPermissions = Permission::whereIn('name', [
+        //         'dashboard index',
+        //         'majors index',
+        //         'academic-years index',
+        //         'semesters index',
+        //         // Tambahkan permission index untuk modul lain yang user biasa boleh lihat
+        //     ])->where('guard_name', $guardName)->get();
+        //     if ($userPermissions->isNotEmpty()) {
+        //         $userRole->syncPermissions($userPermissions);
+        //         echo "Specific permissions synced to role '{$userRole->name}'.\n";
         //     } else {
-        //          echo "Warning: No permissions found to sync to role 'admin'.\n"; // Log
+        //          echo "Warning: No specific permissions found to sync to role '{$userRole->name}'.\n";
         //     }
         // }
         // ============================================================
+         echo "Finished assigning permissions.\n"; // Log
+
 
     }
 }

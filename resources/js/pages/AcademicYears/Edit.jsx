@@ -1,15 +1,15 @@
-// resources/js/Pages/AcademicYears/Create.jsx
+// resources/js/Pages/AcademicYears/Edit.jsx
 
-import React from 'react';
+import React, { useEffect } from 'react'; // Import useEffect
 import AuthenticatedLayout from '@/templates/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import Container from '@/components/atoms/Container';
 import Card from '@/components/organisms/Card';
 import FormGroup from '@/components/molecules/FormGroup';
-import SubmitButton from '@/components/molecules/SubmitButton';
+import SubmitButton from '@/components/molecules/SubmitButton'; // Ganti dengan PrimaryButton jika itu komponen Anda
 import CancelButton from '@/components/molecules/CancelButton';
 
-export default function Edit({ auth, academicYear }) {
+export default function Edit({ auth, academicYear }) { // Menerima prop 'auth'
     const { data, setData, put, processing, errors } = useForm({
         nama_tahun_ajaran: '',
         tahun_mulai: '',
@@ -17,7 +17,8 @@ export default function Edit({ auth, academicYear }) {
     });
 
     // Use useEffect to populate the form when the academicYear prop changes
-    React.useEffect(() => {
+    // Efek ini akan mengisi form saat data academicYear diterima dari controller
+    useEffect(() => { // Gunakan useEffect dari React
         if (academicYear) {
             setData({
                 nama_tahun_ajaran: academicYear.nama_tahun_ajaran,
@@ -25,16 +26,19 @@ export default function Edit({ auth, academicYear }) {
                 tahun_selesai: academicYear.tahun_selesai,
             });
         }
-    }, [academicYear]); // Rerun this effect when academicYear prop changes
+         // Tidak perlu cleanup function di sini karena setData aman
+    }, [academicYear]); // Rerun this effect when academicYear prop changes (pastikan objek academicYear stabil)
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        // Kirim request PUT ke route update dengan ID academicYear
         put(route('academic-years.update', academicYear.id));
     };
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            auth={auth} // <--- PERBAIKAN: Lewatkan seluruh objek 'auth' sebagai prop bernama 'auth'
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Edit Tahun Ajaran</h2>}
         >
             <Head title="Edit Tahun Ajaran" />
@@ -52,7 +56,7 @@ export default function Edit({ auth, academicYear }) {
                                 type="text"
                                 value={data.nama_tahun_ajaran}
                                 onChange={(e) => setData('nama_tahun_ajaran', e.target.value)}
-                                className="form-input w-full"
+                                className="form-input w-full" // Sesuaikan class styling input Anda
                             />
                         </FormGroup>
 
@@ -66,7 +70,7 @@ export default function Edit({ auth, academicYear }) {
                                 type="number"
                                 value={data.tahun_mulai}
                                 onChange={(e) => setData('tahun_mulai', e.target.value)}
-                                className="form-input w-full"
+                                className="form-input w-full" // Sesuaikan class styling input Anda
                             />
                         </FormGroup>
 
@@ -80,12 +84,14 @@ export default function Edit({ auth, academicYear }) {
                                 type="number"
                                 value={data.tahun_selesai}
                                 onChange={(e) => setData('tahun_selesai', e.target.value)}
-                                className="form-input w-full"
+                                className="form-input w-full" // Sesuaikan class styling input Anda
                             />
                         </FormGroup>
 
                         <div className="flex items-center justify-end gap-4">
+                            {/* Gunakan Link dari Inertia jika CancelButton adalah komponen Link */}
                             <CancelButton href={route('academic-years.index')} />
+                            {/* Gunakan PrimaryButton jika SubmitButton adalah komponen PrimaryButton */}
                             <SubmitButton processing={processing}>Perbarui</SubmitButton>
                         </div>
                     </form>

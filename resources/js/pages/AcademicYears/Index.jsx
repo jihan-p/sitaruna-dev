@@ -28,25 +28,33 @@ export default function Index({ auth, academicYears, filters, perPage: initialPe
         setData('perPage', e.target.value);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    // Gunakan useEffect untuk memicu pencarian saat search atau perPage berubah
+    useEffect(() => {
         get(route('academic-years.index'), {
+            data: {
+                search: data.search,
+                perPage: data.perPage,
+            },
             preserveState: true,
             replace: true,
         });
-    };
+    }, [data.search, data.perPage]); // Dependencies: effect akan berjalan ulang saat data.search atau data.perPage berubah
+
 
     const routeResourceName = 'academic-years';
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            auth={auth} // <--- PERBAIKAN: Lewatkan seluruh objek 'auth' sebagai prop bernama 'auth'
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Manajemen Tahun Ajaran</h2>}
         >
             <Head title="Manajemen Tahun Ajaran" />
 
             <Container>
-                <form onSubmit={handleSubmit} className='mb-4 flex flex-col md:flex-row items-center justify-between gap-4'>
+                 {/* Area Kontrol Tabel (Tambah, Search, PerPage) - Menggunakan form untuk submit GET */}
+                 {/* Form ini hanya untuk trigger submit GET saat tombol "Cari" diklik (atau bisa pakai useEffect saja seperti di Semester Index) */}
+                 {/* Jika pakai useEffect di atas, form submit ini bisa dihapus atau diubah logikanya */}
+                <form onSubmit={(e) => { e.preventDefault(); get(route('academic-years.index'), { data: { search: data.search, perPage: data.perPage }, preserveState: true, replace: true }); }} className='mb-4 flex flex-col md:flex-row items-center justify-between gap-4'>
                     {auth.user && hasAnyPermission(['academic-years create']) && (
                         <Link href={route(`${routeResourceName}.create`)}>
                             <PrimaryButton>Tambah Tahun Ajaran</PrimaryButton>
@@ -70,12 +78,14 @@ export default function Index({ auth, academicYears, filters, perPage: initialPe
                             <option value="50">50 per halaman</option>
                             <option value={academicYears.total}>Tampilkan Semua</option>
                         </select>
-                        <button
+                         {/* Tombol Cari - Hanya diperlukan jika tidak menggunakan useEffect untuk trigger pencarian */}
+                         {/* Jika menggunakan useEffect, tombol ini bisa dihapus */}
+                        {/* <button
                             type="submit"
                             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500 focus:outline-none focus:ring"
                         >
                             Cari
-                        </button>
+                        </button> */}
                     </div>
                 </form>
 

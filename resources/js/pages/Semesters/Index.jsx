@@ -8,7 +8,7 @@ import { Head, Link, usePage, useForm } from '@inertiajs/react'; // Import usePa
 // === Pastikan path import komponen Anda sesuai dengan struktur proyek Anda ===
 import Container from '@/components/atoms/Container'; // Sesuaikan path
 import Card from '@/components/organisms/Card';     // Sesuaikan path
-import PrimaryButton from '@/components/molecules/PrimaryButton'; // Sesuaikan path
+import PrimaryButton from '@/components/molecules/PrimaryButton'; // Sesuaikan path (untuk tombol Tambah)
 import CancelButton from '@/components/molecules/CancelButton';   // Sesuaikan path (opsional, jika tombol kembali pakai ini)
 import TextInput from '@/components/atoms/TextInput'; // Sesuaikan path (untuk search input)
 // Jika Anda punya komponen Table kustom, import di sini:
@@ -20,101 +20,87 @@ import hasAnyPermission from '@/utils/Permissions'; // === Sesuaikan path utilit
 
 
 // Komponen halaman Index untuk Modul Semester
-export default function Index({ auth, semesters, filters, perPage: initialPerPage }) {
+// Menerima prop 'auth' (dari layout), 'semesters' (objek data Semester dengan pagination dari controller),
+// 'filters' (objek filter yang aktif dari controller), dan 'perPage' (nilai perPage yang aktif).
+// Pastikan prop 'auth' diterima di sini.
+export default function Index({ auth, semesters, filters, perPage: initialPerPage }) { // <--- Pastikan 'auth' diterima sebagai prop
 
     // Ambil flash messages dari props Inertia
-    // usePage().props berisi semua data yang dikirim ke halaman Inertia saat ini
-    // 'flash' adalah key standar Inertia untuk flash messages dari sesi Laravel
-    const { flash } = usePage().props; // Ini sudah benar, flash bisa undefined jika tidak ada pesan
+    const { flash } = usePage().props;
 
     // Gunakan useForm untuk manajemen state form (di sini untuk filter dan pagination)
-    // useForm menyimpan state dan secara otomatis menangani pengiriman data via GET/POST/PUT/DELETE
     const { data, setData, get, processing, errors } = useForm({
-        search: filters.search || '', // State untuk input pencarian (inisialisasi dari filter props atau string kosong)
-        perPage: initialPerPage || 10, // State untuk jumlah item per halaman (inisialisasi dari props atau default 10)
+        search: filters.search || '',
+        perPage: initialPerPage || 10,
     });
 
 
     // Handler untuk perubahan nilai pada input pencarian
     const handleSearchChange = (e) => {
-        setData('search', e.target.value); // Update state 'search' useForm
-        // Perubahan state 'search' akan memicu useEffect di bawah
+        setData('search', e.target.value);
     };
 
     // Handler untuk perubahan nilai pada select jumlah item per halaman (perPage)
     const handlePerPageChange = (e) => {
-        setData('perPage', e.target.value); // Update state 'perPage' useForm
-        // Perubahan state 'perPage' akan memicu useEffect di bawah
+        setData('perPage', e.target.value);
     };
 
     // useEffect hook untuk memicu Inertia GET visit (reload halaman dengan filter baru)
-    // Efek ini akan berjalan setiap kali nilai data.search atau data.perPage berubah
     useEffect(() => {
-        console.log("Filter or perPage state changed, triggering Inertia GET visit..."); // Log untuk debug
-        // Gunakan method get() dari useForm untuk mengirim request GET ke route index saat ini
-        // Parameter pertama adalah route, parameter kedua adalah konfigurasi visit
-        get(route('semesters.index'), { // Route ke halaman index Semester (pastikan nama route benar)
-            data: { // Kirim state data useForm (search dan perPage) sebagai query parameters
+        console.log("Filter or perPage state changed, triggering Inertia GET visit...");
+        get(route('semesters.index'), {
+            data: {
                 search: data.search,
                 perPage: data.perPage,
             },
-            // Konfigurasi visit Inertia (penting untuk pengalaman pengguna)
-            preserveState: true, // Mempertahankan state komponen React saat navigasi (agar input/select tidak reset)
-            preserveScroll: true, // Mempertahankan posisi scroll halaman
-            replace: true, // Mengganti entri terakhir di histori browser (untuk menghindari duplikasi saat filter/pagination)
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
         });
-    }, [data.search, data.perPage]); // Dependency array: effect akan berjalan ulang saat data.search atau data.perPage berubah
+    }, [data.search, data.perPage]);
 
 
     // Handler untuk tombol Hapus data Semester
     const handleDelete = (semesterId) => {
-        // Tampilkan konfirmasi sebelum menghapus
         if (confirm('Apakah Anda yakin ingin menghapus data Semester ini?')) {
-            console.log(`Attempting to delete Semester with ID: ${semesterId}`); // Log untuk debug
-            // Gunakan useForm untuk mengirim request DELETE
-            // Membuat form sementara dengan metode DELETE dan mengirimkannya ke route destroy
-             useForm().delete(route('semesters.destroy', semesterId), { // Route ke controller@destroy dengan ID
+            console.log(`Attempting to delete Semester with ID: ${semesterId}`);
+             useForm().delete(route('semesters.destroy', semesterId), {
                  onSuccess: () => {
                      console.log("Data Semester berhasil dihapus!");
-                     // Inertia akan otomatis me-render ulang halaman index setelah berhasil delete
-                     // Flash message 'success' akan tampil jika dikirim dari controller
                  },
                  onError: (errors) => {
                      console.error("Ada error saat menghapus data Semester:", errors);
-                     // Errors akan tersedia di objek errors dari useForm. Anda bisa menampilkan notifikasi di sini.
-                     alert("Gagal menghapus data. Mungkin data ini sedang digunakan di modul lain."); // Contoh alert sederhana
+                     alert("Gagal menghapus data. Mungkin data ini sedang digunakan di modul lain.");
                  },
                  onFinish: () => {
                      console.log("Proses penghapusan selesai.");
                  }
             });
         } else {
-            console.log("Penghapusan dibatalkan oleh user."); // Log jika user membatalkan
+            console.log("Penghapusan dibatalkan oleh user.");
         }
     };
 
 
     // Definisikan nama resource route untuk kemudahan
-    const routeResourceName = 'semesters'; // Sesuaikan dengan prefix route resource di web.php
+    const routeResourceName = 'semesters';
 
 
     return (
         <AuthenticatedLayout
-            user={auth.user} // Pass user prop ke layout (jika dibutuhkan di layout untuk permission check di menu)
-            // Header halaman (muncul di top bar layout)
+            auth={auth} // <--- PERBAIKAN: Lewatkan seluruh objek 'auth' sebagai prop bernama 'auth'
+            // Header halaman
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Manajemen Semester</h2>}
         >
             {/* Mengatur judul halaman di browser tab */}
             <Head title="Manajemen Semester" />
 
-            <Container> {/* Gunakan komponen Container Anda */}
-                <Card> {/* Gunakan komponen Card Anda */}
+            <Container>
+                <Card>
 
                     {/* === Area Flash Message (Dengan Pemeriksaan!) === */}
-                    {/* Menampilkan pesan sukses atau error dari controller */}
-                    {/* Memeriksa apakah objek 'flash' ada (!flash) sebelum mengakses propertinya */}
-                    {flash && ( // <--- Pemeriksaan: Pastikan 'flash' tidak undefined
-                        <> {/* Menggunakan React Fragment jika ada lebih dari satu jenis pesan flash */}
+                    {flash && (
+                        <>
                             {flash.success && (
                                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
                                     <span className="block sm:inline">{flash.success}</span>
@@ -125,24 +111,14 @@ export default function Index({ auth, semesters, filters, perPage: initialPerPag
                                     <span className="block sm:inline">{flash.error}</span>
                                 </div>
                             )}
-                             {/* Tambahkan jenis flash message lain jika Anda menggunakannya (misal: 'warning', 'info') */}
-                             {/*
-                             {flash.warning && ( ... )}
-                             {flash.info && ( ... )}
-                             */}
                         </>
                     )}
-                    {/* ======================================== */}
 
                     {/* === Area Kontrol Tabel (Tambah, Search, PerPage) === */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between mb-4"> {/* Flex container untuk menata item */}
-                        {/* flex-col: tumpuk vertikal di mobile; sm:flex-row: tata horizontal di sm+ */}
-                        {/* items-center: Pusatkan item vertikal; justify-between: Beri ruang antara item */}
-
+                    <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
                         {/* Tombol Tambah (Create) - Tampil hanya jika user punya permission 'semesters create' */}
-                        {auth.user && hasAnyPermission(['semesters create']) && ( // Cek permission menggunakan utility
-                             <Link href={route(`${routeResourceName}.create`)}> {/* Link ke route create Semester */}
-                                {/* Gunakan komponen PrimaryButton Anda */}
+                        {auth.user && hasAnyPermission(['semesters create']) && (
+                             <Link href={route(`${routeResourceName}.create`)}>
                                  <PrimaryButton>
                                      Tambah Semester
                                  </PrimaryButton>
@@ -150,88 +126,69 @@ export default function Index({ auth, semesters, filters, perPage: initialPerPag
                         )}
 
                         {/* Area Pencarian dan PerPage */}
-                        <div className="flex flex-col sm:flex-row items-center gap-2 mt-4 sm:mt-0"> {/* Flex container untuk search dan perPage */}
-                            {/* mt-4 / sm:mt-0: margin atas di mobile, 0 di sm+ */}
-                            {/* gap-2: jarak antar item */}
-
+                        <div className="flex flex-col sm:flex-row items-center gap-2 mt-4 sm:mt-0">
                             {/* Input Pencarian */}
-                            {/* Gunakan komponen TextInput Anda */}
                             <TextInput
                                 type="text"
                                 placeholder="Cari Semester..."
-                                value={data.search} // Value input dari state useForm
-                                onChange={handleSearchChange} // Handler perubahan input
-                                className="block w-full sm:w-auto" // Styling lebar input
+                                value={data.search}
+                                onChange={handleSearchChange}
+                                className="block w-full sm:w-auto"
                             />
 
                             {/* Select PerPage */}
-                            {/* Gunakan elemen <select> standar atau komponen SelectInput Anda */}
                              <select
-                                value={data.perPage} // Value select dari state useForm
-                                onChange={handlePerPageChange} // Handler perubahan select
-                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm block w-full sm:w-auto text-sm" // Styling select
+                                value={data.perPage}
+                                onChange={handlePerPageChange}
+                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm block w-full sm:w-auto text-sm"
                              >
                                  <option value="10">10 per halaman</option>
                                  <option value="25">25 per halaman</option>
                                  <option value="50">50 per halaman</option>
-                                 {/* Opsional: Opsi untuk menampilkan semua data (tidak direkomendasikan untuk data besar) */}
                                  <option value={semesters.total}>Semua ({semesters.total})</option>
                              </select>
                         </div>
                     </div>
-                    {/* ================================================== */}
 
                     {/* === Area Tabel Daftar Semester === */}
-                    {/* Gunakan komponen Table Anda jika ada, atau gunakan struktur HTML tabel standar */}
-                    <div className="overflow-x-auto shadow-sm sm:rounded-lg"> {/* Tambahkan styling shadow dan rounded */}
-                        {/* Jika Anda punya komponen Table, gunakan itu dan passing data + kolom */}
-                         {/* <Table data={semesters.data} columns={[...]} /> */}
-
-                         {/* Jika menggunakan HTML tabel standar: */}
-                        <table className="w-full text-sm text-left text-gray-500"> {/* Styling tabel */}
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50"> {/* Styling header tabel */}
-                                <tr> {/* Pastikan tidak ada whitespace di sini */}
-                                    <th scope="col" className="px-6 py-3">No</th> {/* Pastikan tidak ada whitespace di sini */}
-                                    <th scope="col" className="px-6 py-3">Nama Semester</th> {/* Contoh Kolom */}
-                                    <th scope="col" className="px-6 py-3">Tahun Ajaran</th> {/* Tampilkan nama Tahun Ajaran dari relasi */}
-                                    <th scope="col" className="px-6 py-3">Aktif</th> {/* Tampilkan status aktif */}
-                                    <th scope="col" className="px-6 py-3 text-right">Aksi</th> {/* Kolom untuk tombol Edit/Hapus */}
-                                </tr> {/* Pastikan tidak ada whitespace di sini */}
-                            </thead> {/* Pastikan tidak ada whitespace di sini */}
+                    <div className="overflow-x-auto shadow-sm sm:rounded-lg">
+                        <table className="w-full text-sm text-left text-gray-500">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3">No</th>
+                                    <th scope="col" className="px-6 py-3">Nama Semester</th>
+                                    <th scope="col" className="px-6 py-3">Tahun Ajaran</th>
+                                    <th scope="col" className="px-6 py-3">Aktif</th>
+                                    <th scope="col" className="px-6 py-3 text-right">Aksi</th>
+                                </tr>
+                            </thead>
                             <tbody>
-                                {/* Loop (map) data Semester dari semesters.data */}
-                                {/* semesters.data adalah array dari objek Semester untuk halaman saat ini */}
                                 {semesters.data.map((semester, index) => (
-                                    <tr key={semester.id} className="bg-white border-b hover:bg-gray-50"> {/* Styling baris */}
+                                    <tr key={semester.id} className="bg-white border-b hover:bg-gray-50">
                                         <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                                            {/* Nomor urut = (Current Page - 1) * PerPage + Index Baris + 1 */}
                                             {(semesters.current_page - 1) * semesters.per_page + index + 1}
                                         </th>
-                                        <td className="px-6 py-4">{semester.nama_semester}</td> {/* Tampilkan Nama Semester */}
-                                        {/* Tampilkan nama Tahun Ajaran dari relasi academicYear */}
+                                        <td className="px-6 py-4">{semester.nama_semester}</td>
                                         <td className="px-6 py-4">{semester.academic_year ? semester.academic_year.nama_tahun_ajaran : '-'}</td>
-                                        {/* Tampilkan status aktif (misal: Yes/No atau icon) */}
                                         <td className="px-6 py-4">{semester.is_active ? 'Ya' : 'Tidak'}</td>
                                         <td className="px-6 py-4 text-right">
-                                            {/* Tombol Aksi (Edit & Hapus) */}
-                                            <div className="flex justify-end items-center gap-2"> {/* Gunakan flex untuk menata tombol */}
+                                            <div className="flex justify-end items-center gap-2">
 
                                                 {/* Tombol Edit - Tampil hanya jika user punya permission 'semesters edit' */}
-                                                {auth.user && hasAnyPermission(['semesters edit']) && ( // Cek permission menggunakan utility
+                                                {auth.user && hasAnyPermission(['semesters edit']) && (
                                                      <Link
-                                                        href={route(`${routeResourceName}.edit`, semester.id)} // Link ke route edit Semester ini dengan passing ID
-                                                        className="font-medium text-blue-600 hover:underline" // Styling link
+                                                        href={route(`${routeResourceName}.edit`, semester.id)}
+                                                        className="font-medium text-blue-600 hover:underline"
                                                      >
                                                          Edit
                                                      </Link>
                                                 )}
 
                                                 {/* Tombol Hapus - Tampil hanya jika user punya permission 'semesters delete' */}
-                                                {auth.user && hasAnyPermission(['semesters delete']) && ( // Cek permission menggunakan utility
+                                                {auth.user && hasAnyPermission(['semesters delete']) && (
                                                      <button
-                                                        onClick={() => handleDelete(semester.id)} // Panggil handler delete dengan ID
-                                                        className="font-medium text-red-600 hover:underline ml-2" // Styling tombol, ml-2 beri jarak dari Edit
-                                                        // Opsional: Tambahkan disabled={processing} jika ingin menonaktifkan saat request hapus berjalan
+                                                        onClick={() => handleDelete(semester.id)}
+                                                        className="font-medium text-red-600 hover:underline ml-2"
                                                      >
                                                          Hapus
                                                      </button>
@@ -241,7 +198,6 @@ export default function Index({ auth, semesters, filters, perPage: initialPerPag
                                     </tr>
                                 ))}
 
-                                {/* Tampilkan pesan jika tidak ada data */}
                                 {semesters.data.length === 0 && (
                                     <tr>
                                         <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
@@ -252,33 +208,26 @@ export default function Index({ auth, semesters, filters, perPage: initialPerPag
                             </tbody>
                         </table>
                     </div>
-                    {/* ========================================== */}
 
                     {/* === Area Pagination === */}
-                    {/* Tampilkan link pagination jika ada lebih dari 1 halaman (biasanya links.length > 3 karena ada link prev, 1, next) */}
-                    {semesters.links.length > 3 && ( // Periksa apakah ada cukup link pagination
-                         <nav className="flex items-center justify-between mt-4"> {/* Styling pagination */}
-                             {/* Container link pagination */}
+                    {semesters.links.length > 3 && (
+                         <nav className="flex items-center justify-between mt-4">
                             <div className="flex -space-x-px rounded-md shadow-sm">
-                                {/* Loop (map) link pagination dari semesters.links */}
                                 {semesters.links.map((link) => (
-                                    // Menggunakan <Link> dari Inertia untuk navigasi antar halaman pagination
                                      <Link
-                                        key={link.label} // Gunakan label link sebagai key (unik)
-                                        href={link.url} // URL halaman pagination
-                                        // Tentukan class aktif dan disabled
+                                        key={link.label}
+                                        href={link.url}
                                         className={`px-3 py-2 text-sm leading-tight border border-gray-300 ${
-                                             link.active ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700' // Styling aktif dan tidak aktif
-                                        } ${!link.url ? 'cursor-not-allowed opacity-50' : ''}`} // Styling disabled jika tidak ada URL (Prev/Next di ujung)
-                                        dangerouslySetInnerHTML={{ __html: link.label }} // Render label HTML (untuk &laquo; Prev dan &raquo; Next)
-                                        preserveState={true} // Pertahankan state search/perPage saat klik pagination
-                                        preserveScroll={true} // Pertahankan posisi scroll
+                                             link.active ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                        } ${!link.url ? 'cursor-not-allowed opacity-50' : ''}`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                        preserveState={true}
+                                        preserveScroll={true}
                                     />
                                 ))}
                             </div>
                          </nav>
                     )}
-                    {/* ========================= */}
 
                 </Card>
             </Container>
