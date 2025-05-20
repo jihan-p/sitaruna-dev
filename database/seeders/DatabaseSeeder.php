@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RolesTableSeeder::class);
         $this->call(PermissionsTableSeeder::class);
         $this->call(UserTableSeeder::class);
+        $this->call(MajorSeeder::class);
 
         // === Pastikan Seeder AcademicYear dijalankan SEBELUM Seeder Semester ===
         // Jika Anda membuat data AcademicYear di sini:

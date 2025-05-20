@@ -22,24 +22,25 @@ class MajorFactory extends Factory
      */
     public function definition(): array
     {
-        return [
-            // === Mengisi kolom 'nama_jurusan' dengan data dummy unik ===
-            // Menggunakan faker untuk membuat kata unik
-            // Anda bisa sesuaikan formatnya agar lebih relevan dengan nama jurusan di sekolah kejuruan
-            'nama_jurusan' => $this->faker->unique()->word . ' ' . $this->faker->randomElement(['Engineering', 'Business', 'Technology', 'Design', 'Health']), // Contoh generic
-            // Atau daftar nama jurusan spesifik:
-            // 'nama_jurusan' => $this->faker->unique()->randomElement([
-            //     'Rekayasa Perangkat Lunak',
-            //     'Teknik Komputer Jaringan',
-            //     'Multimedia',
-            //     'Akuntansi Keuangan Lembaga',
-            //     'Otomatisasi Tata Kelola Perkantoran',
-            //     'Bisnis Daring Pemasaran',
-            //     // Tambahkan nama jurusan lain di sekolah Anda
-            // ]),
-            // ==========================================================
+        // Contoh: Membuat nama jurusan dari daftar spesifik
+        $majors = [
+            'Rekayasa Perangkat Lunak',
+            'Teknik Komputer Jaringan',
+            'Multimedia',
+            'Akuntansi Keuangan Lembaga',
+            'Otomatisasi Tata Kelola Perkantoran',
+            'Bisnis Daring Pemasaran',
+            'Kuliner',
+            'Tata Busana',
+            'Teknik Otomotif',
+            'Teknik Listrik',
+            'Agribisnis Tanaman Pangan dan Hortikultura',
+            // Tambahkan nama jurusan lain yang relevan
+        ];
 
-            // Kolom timestamps (created_at, updated_at) akan diisi otomatis saat seeding
+        return [
+            // Gunakan `faker` untuk memilih secara acak dari daftar dan memastikan keunikan
+            'nama_jurusan' => $this->faker->unique()->randomElement($majors),
         ];
     }
 
