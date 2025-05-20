@@ -219,6 +219,10 @@ export default function AuthenticatedLayout({ user: authUser, header, children }
                         </NavLink>
                     )}
 
+                    {auth.user && hasAnyPermission(['academic-years index']) && ( // <-- Kode untuk menu Tahun Ajaran
+                        <NavLink href={route('academic-years.index')} active={route().current('academic-years.index')} isSidebarExpanded={isNavExpanded} isMobile={isMobile} icon={IconCalendar}>Tahun Ajaran</NavLink>
+                    )}
+
                     {/* NavLink Semester yang Diperbaiki */}
                     {auth.user && hasAnyPermission(['semesters index']) && (
                         <NavLink

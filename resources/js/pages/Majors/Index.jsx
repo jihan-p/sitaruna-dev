@@ -1,130 +1,184 @@
-// resources/js/Pages/Majors/Index.jsx
+import React, { useEffect } from 'react';
+import AuthenticatedLayout from '@/templates/AuthenticatedLayout';
+import Container from '@/components/atoms/Container';
+import Card from '@/components/organisms/Card';
+import Table from '@/components/organisms/Table';
+import Pagination from '@/components/molecules/Pagination';
+import TextInput from '@/components/atoms/TextInput';
+import AddButton from '@/components/molecules/AddButton';
+import EditButton from '@/components/molecules/EditButton';
+import DeleteButton from '@/components/molecules/DeleteButton';
 
-import React from 'react';
-// Import layout terautentikasi Anda
-import AuthenticatedLayout from '@/templates/AuthenticatedLayout'; // === Sesuaikan path import ini jika berbeda ===
-// Import komponen layout dan tabel
-import Container from '@/components/atoms/Container'; // === Sesuaikan path import ini jika berbeda ===
-import Card from '@/components/organisms/Card';     // === Sesuaikan path import ini jika berbeda ===
-import Table from '@/components/organisms/Table';   // === Sesuaikan path import ini jika berbeda ===
-import Pagination from '@/components/molecules/Pagination'; // === Sesuaikan path import ini jika berbeda ===
-import Search from '@/components/molecules/Search'; // === Sesuaikan path import ini jika berbeda (Opsional untuk Index Jurusan jika list kecil) ===
-import AddButton from '@/components/molecules/AddButton'; // === Sesuaikan path import ini jika berbeda ===
-import EditButton from '@/components/molecules/EditButton'; // === Sesuaikan path import ini jika berbeda ===
-import DeleteButton from '@/components/molecules/DeleteButton'; // === Sesuaikan path import ini jika berbeda ===
+import { Head, Link, usePage, useForm } from '@inertiajs/react';
 
-// Import hook dan komponen dari Inertia
-import { Head, Link, usePage } from '@inertiajs/react'; // Import Link jika Anda menggunakan Link native untuk Detail
+import { IconEye } from '@tabler/icons-react';
 
-// Import utility untuk cek permission
-import hasAnyPermission from '@/utils/Permissions'; // === Pastikan path import ini benar ===
+import hasAnyPermission from '@/utils/Permissions';
 
-// Pastikan komponen-komponen atom/molecule/organism di atas sudah ada dan berfungsi sesuai kebutuhan Anda
 
-export default function Index({auth}) { // Terima prop 'auth' dari Inertia
-    // Ambil data 'majors' (hasil paginasi dari controller) dan 'filters' dari props Inertia
-    // Data 'majors' dikirim dari MajorController@index
-    const { majors, filters } = usePage().props;
+export default function Index({ auth, majors, filters, perPage: initialPerPage }) {
+    const { flash } = usePage().props;
 
-    // Definisikan nama resource route yang digunakan di route() helper (sesuai web.php)
+    const { data, setData, get, processing, errors } = useForm({
+        search: filters.search || '',
+        perPage: initialPerPage || 10,
+    });
+
+    const handleSearchChange = (e) => {
+        setData('search', e.target.value);
+    };
+
+    const handlePerPageChange = (e) => {
+        setData('perPage', e.target.value);
+    };
+
+    useEffect(() => {
+        get(route('majors.index'), {
+            data: {
+                search: data.search,
+                perPage: data.perPage,
+            },
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    }, [data.search, data.perPage]);
+
+
+    const handleDelete = (majorId) => {
+        if (confirm('Apakah Anda yakin ingin menghapus data Jurusan ini?')) {
+             useForm().delete(route('majors.destroy', majorId), {
+                 onSuccess: () => {
+                 },
+                 onError: (errors) => {
+                     alert("Gagal menghapus data. Mungkin data ini sedang digunakan di modul lain.");
+                 },
+                 onFinish: () => {
+                 }
+            });
+        } else {
+        }
+    };
+
+
     const routeResourceName = 'majors';
+
 
     return (
         <AuthenticatedLayout
-            user={auth.user} // Pass user prop ke layout
-            // Header halaman
+            auth={auth}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Manajemen Jurusan</h2>}
         >
-            {/* Set title halaman di browser tab */}
             <Head title="Manajemen Jurusan" />
 
-            <Container> {/* Gunakan komponen Container Anda */}
-                <Card> {/* Gunakan komponen Card Anda */}
-                    {/* === Header Card: Judul, Search, Tombol Tambah === */}
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4">
-                         <h3 className="text-lg font-semibold text-gray-800">Daftar Jurusan</h3>
-                         {/* Container untuk Search dan Tombol Tambah */}
-                         <div className="flex flex-col md:flex-row items-center gap-4">
-                             {/* Search Component (Opsional untuk Jurusan jika listnya tidak terlalu panjang) */}
-                             {/* Jika Anda ingin fitur search untuk Jurusan, uncomment dan sesuaikan */}
-                             {/* <Search filters={filters} routeResourceName={routeResourceName} /> */}
-
-                             {/* Tombol Tambah Jurusan - Tampilkan hanya jika user punya permission 'majors create' */}
-                              {auth.user && hasAnyPermission([`${routeResourceName} create`]) && ( // Cek permission menggunakan template string `${routeResourceName} create`
-                                 // Menggunakan komponen AddButton
-                                 <AddButton url={route(`${routeResourceName}.create`)}>Tambah Jurusan</AddButton>
-                             )}
-                         </div>
-                    </div> {/* === Akhir Header Card === */}
-
-                    {/* === Tabel Komponen untuk Menampilkan Data Jurusan === */}
-                    <Table> {/* Gunakan komponen Table Anda */}
-                        <Table.Thead> {/* Header Tabel */}
-                            <tr>
-                                <Table.Th>No</Table.Th>
-                                <Table.Th>Nama Jurusan</Table.Th>
-                                {/* Tambahkan kolom header lain jika diperlukan (misal: Created At, dll) */}
-                                <Table.Th>Aksi</Table.Th> {/* Kolom untuk tombol aksi (Edit, Delete) */}
-                            </tr>
-                        </Table.Thead>
-                        <Table.Tbody> {/* Isi Tabel */}
-                             {/* Cek apakah ada data Jurusan yang diterima */}
-                            {majors && majors.data && majors.data.length > 0 ? (
-                                 // Loop data Jurusan menggunakan .map()
-                                majors.data.map((major, index) => (
-                                    // Baris tabel untuk setiap Jurusan
-                                    <tr key={major.id}> {/* Gunakan ID Jurusan sebagai key unik */}
-                                        {/* Nomor urut baris, dihitung berdasarkan pagination */}
-                                        <Table.Td>{majors.from + index}</Table.Td>
-                                        {/* Menampilkan Nama Jurusan */}
-                                        <Table.Td>{major.nama_jurusan}</Table.Td>
-                                         {/* Tambahkan sel data lain jika ada kolom tambahan */}
-
-                                        {/* Sel untuk tombol aksi */}
-                                        <Table.Td>
-                                            <div className="flex items-center gap-2"> {/* Flex container untuk menata tombol secara horizontal dengan jarak */}
-                                                 {/* Tombol Detail (Opsional jika ada halaman Show) */}
-                                                 {/* Jika Anda punya halaman Show untuk Jurusan dan ingin link di sini */}
-                                                 {/* Pastikan Anda mengimpor Link dari Inertia jika menggunakan tag <Link> native */}
-                                                 {/* Dan import ikon jika menggunakannya */}
-                                                 {/* {auth.user && hasAnyPermission([`${routeResourceName} show`]) && // Cek permission
-                                                    <Link href={route(`${routeResourceName}.show`, major.id)} title="Detail">
-                                                         <IconListDetails size={20} className='text-blue-500 hover:text-blue-700'/> // Ganti dengan ikon Detail Anda
-                                                     </Link>
-                                                 } */}
-
-                                                {/* Tombol Edit - Tampilkan hanya jika user punya permission 'majors edit' */}
-                                                {auth.user && hasAnyPermission([`${routeResourceName} edit`]) && ( // Cek permission
-                                                    // Menggunakan komponen EditButton
-                                                     <EditButton url={route(`${routeResourceName}.edit`, major.id)}/> // Link ke route edit jurusan dengan ID major
-                                                )}
-
-                                                {/* Tombol Delete - Tampilkan hanya jika user punya permission 'majors delete' */}
-                                                {auth.user && hasAnyPermission([`${routeResourceName} delete`]) && ( // Cek permission
-                                                    // Menggunakan komponen DeleteButton
-                                                     <DeleteButton url={route(`${routeResourceName}.destroy`, major.id)}/> // Link ke route destroy jurusan dengan ID major
-                                                )}
-                                            </div>
-                                        </Table.Td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <Table.Empty colSpan={3} message={'Data Jurusan tidak tersedia'}/>
+            <Container>
+                    {flash && (
+                        <>
+                            {flash.success && (
+                                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                    <span className="block sm:inline">{flash.success}</span>
+                                </div>
                             )}
-                        </Table.Tbody>
-                    </Table> {/* === Akhir Tabel Komponen === */}
+                            {flash.error && (
+                                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                    <span className="block sm:inline">{flash.error}</span>
+                                </div>
+                            )}
+                        </>
+                    )}
 
-                    {/* === Komponen Pagination === */}
-                    {/* Tampilkan pagination jika jumlah halaman lebih dari 1 */}
-                    {majors && majors.last_page > 1 && (
-                        <div className='flex items-center justify-center mt-4'> {/* Container untuk menengahkan pagination */}
-                            <Pagination links={majors.links}/> {/* Menggunakan komponen Pagination */}
+                <div className='mb-4 flex flex-col md:flex-row items-center justify-between gap-4'>
+                    {auth.user && hasAnyPermission([`${routeResourceName} create`]) && (
+                        <AddButton url={route(`${routeResourceName}.create`)}>Tambah Jurusan</AddButton>
+                    )}
+                     <div className='w-full md:w-auto md:flex-1 flex flex-col sm:flex-row items-center gap-2'>
+                         <TextInput
+                            type="text"
+                            placeholder={'Cari jurusan berdasarkan nama...'}
+                            value={data.search}
+                            onChange={handleSearchChange}
+                            className="block w-full sm:w-auto"
+                         />
+
+                         <select
+                            value={data.perPage}
+                            onChange={handlePerPageChange}
+                            className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm block w-full sm:w-auto text-sm"
+                         >
+                             <option value="10">10 per halaman</option>
+                             <option value="25">25 per halaman</option>
+                             <option value="50">50 per halaman</option>
+                             {majors && majors.total && (
+                                 <option value={majors.total}>Semua ({majors.total})</option>
+                             )}
+                         </select>
+                    </div>
+                </div>
+
+
+                <Card>
+                    <div className="overflow-x-auto shadow-sm sm:rounded-lg">
+                        <table className="w-full text-sm text-left text-gray-500">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3">No</th>
+                                    <th scope="col" className="px-6 py-3">Nama Jurusan</th>
+                                    <th scope="col" className="px-6 py-3 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {majors && majors.data && majors.data.length > 0 ? (
+                                    majors.data.map((major, index) => (
+                                        <tr key={major.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                                                {(majors.current_page - 1) * majors.per_page + index + 1}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">{major.nama_jurusan}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <div className="flex items-center justify-end gap-2">
+                                                     {/* {auth.user && hasAnyPermission([`${routeResourceName} show`]) && (
+                                                        <Link
+                                                            href={route(`${routeResourceName}.show`, major.id)}
+                                                            className="inline-flex items-center px-2 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                                            title="Detail"
+                                                        >
+                                                            <IconEye size={16} strokeWidth={2} />
+                                                        </Link>
+                                                     )} */}
+
+
+                                                    {auth.user && hasAnyPermission([`${routeResourceName} edit`]) && (
+                                                         <EditButton url={route(`${routeResourceName}.edit`, major.id)}/>
+                                                    )}
+
+                                                    {auth.user && hasAnyPermission([`${routeResourceName} delete`]) && (
+                                                         <DeleteButton url={route(`${routeResourceName}.destroy`, major.id)}/>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="3" className="px-6 py-4 text-center text-gray-500">
+                                            Tidak ada data Jurusan.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </Card>
+
+                {majors && majors.last_page > 1 && (
+                    <div className='flex flex-col md:flex-row justify-between items-center mt-4 gap-2 text-sm text-gray-500'>
+                        <div>
+                           Menampilkan {majors.from} hingga {majors.to} dari {majors.total} data Jurusan
                         </div>
-                    )} {/* === Akhir Komponen Pagination === */}
-
-                </Card> {/* Akhir Card */}
-            </Container> {/* Akhir Container */}
-
+                        <Pagination links={majors.links}/>
+                    </div>
+                )}
+            </Container>
         </AuthenticatedLayout>
     );
 }
