@@ -2,31 +2,29 @@
 
 import React, { useEffect } from 'react';
 import AuthenticatedLayout from '@/templates/AuthenticatedLayout';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 import Container from '@/components/atoms/Container';
 import Card from '@/components/organisms/Card';
 import FormGroup from '@/components/molecules/FormGroup';
 import TextInput from '@/components/atoms/TextInput';
-import Select2 from '@/components/molecules/Select2'; // Menggunakan Select2 untuk dropdown
+import Select2 from '@/components/molecules/Select2';
 import PrimaryButton from '@/components/molecules/PrimaryButton';
 import CancelButton from '@/components/molecules/CancelButton';
 
+export default function Edit({ auth, class: classData, majors }) {
+    const routeResourceName = 'classes';
 
-export default function Edit({ auth, class: classData, majors }) { // Menerima prop 'class' dan 'majors'
-    // Menggunakan 'classData' sebagai nama prop untuk menghindari konflik dengan reserved keyword 'class'
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         nama_kelas: '',
         major_id: '',
     });
 
-    // Format data majors untuk prop 'options' Select2
-    const majorOptions = majors.map(major => ({
+    const majorOptions = majors.map((major) => ({
         value: major.id,
         label: major.nama_jurusan,
     }));
 
-    // Isi form saat komponen dimuat atau data 'classData' berubah
     useEffect(() => {
         if (classData) {
             setData({
@@ -41,33 +39,29 @@ export default function Edit({ auth, class: classData, majors }) { // Menerima p
         setData(name, type === 'checkbox' ? checked : value);
     };
 
-    // Handler khusus untuk Select2
     const handleSelect2Change = (selectedOption) => {
         setData('major_id', selectedOption ? selectedOption.value : '');
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route('classes.update', classData.id), { // Kirim request PUT ke route update
+        put(route('classes.update', classData.id), {
             onSuccess: () => {
-                // Inertia akan otomatis me-redirect ke halaman index
+                // redirect otomatis ke index
             },
         });
     };
 
-    const routeResourceName = 'classes';
-
-
     return (
         <AuthenticatedLayout
-            auth={auth}
+            user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Edit Kelas</h2>}
         >
             <Head title="Edit Kelas" />
 
             <Container>
-                <Card>
-                    <form onSubmit={handleSubmit}>
+                <Card title="Form Edit Kelas">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <FormGroup label="Nama Kelas" htmlFor="nama_kelas" error={errors.nama_kelas}>
                             <TextInput
                                 id="nama_kelas"
@@ -76,6 +70,7 @@ export default function Edit({ auth, class: classData, majors }) { // Menerima p
                                 onChange={handleInputChange}
                                 className="mt-1 block w-full"
                                 required
+                                autoFocus
                             />
                         </FormGroup>
 
@@ -84,20 +79,19 @@ export default function Edit({ auth, class: classData, majors }) { // Menerima p
                                 id="major_id"
                                 name="major_id"
                                 options={majorOptions}
+                                value={majorOptions.find((opt) => opt.value === data.major_id)}
                                 onChange={handleSelect2Change}
-                                className="mt-1 block w-full"
                                 placeholder="Pilih Jurusan"
-                                value={majorOptions.find(option => option.value === data.major_id)} // Set nilai awal Select2
                                 required
+                                className="mt-1 block w-full"
                             />
                         </FormGroup>
 
-                        <div className="flex items-center justify-end mt-4">
-                            <Link href={route(`${routeResourceName}.index`)}>
-                                <CancelButton className="ms-4">Batal</CancelButton>
-                            </Link>
-
-                            <PrimaryButton className="ms-4" disabled={processing}>
+                        <div className="flex justify-end gap-4">
+                            <CancelButton href={route(`${routeResourceName}.index`)}>
+                                Batal
+                            </CancelButton>
+                            <PrimaryButton type="submit" disabled={processing}>
                                 Perbarui
                             </PrimaryButton>
                         </div>

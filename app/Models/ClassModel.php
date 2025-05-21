@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ClassModel extends Model // Menggunakan 'Classes' karena 'Class' adalah reserved keyword
+class ClassModel extends Model // Using 'ClassModel' because 'Class' is a reserved keyword in PHP
 {
     use HasFactory;
 
-    protected $table = 'classes'; // Menentukan nama tabel secara eksplisit
+    protected $table = 'classes'; // Explicitly define the table name
 
     protected $fillable = [
         'nama_kelas',
@@ -18,7 +18,7 @@ class ClassModel extends Model // Menggunakan 'Classes' karena 'Class' adalah re
 
     /**
      * Get the major that owns the class.
-     * Mendefinisikan relasi "many-to-one" ke model Major.
+     * Defines the "many-to-one" relationship to the Major model.
      */
     public function major()
     {

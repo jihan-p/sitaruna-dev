@@ -152,7 +152,7 @@ export default function AuthenticatedLayout({ user: authUser, header, children }
 
     const mainContentClasses = `
          flex-1 flex flex-col overflow-y-auto
-         ${isMobile ? 'ml-0' : (isSidebarExpanded ? 'sm:ml-64' : 'sm:ml-20')}
+         ${isMobile ? 'ml-0' : (isSidebarExpanded ? 'sm:ml-0' : 'sm:ml-0')}
      `;
 
     const isNavExpanded = isMobile ? isMobileSidebarOpen : isSidebarExpanded;

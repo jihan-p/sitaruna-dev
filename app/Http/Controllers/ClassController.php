@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Classes; // Menggunakan 'Classes' karena 'Class' adalah reserved keyword
-use App\Models\Major; // Import Model Major untuk relasi dropdown
+use App\Models\ClassModel; // Using 'ClassModel' because 'Class' is a reserved keyword
+use App\Models\Major; // Import Major Model for dropdown relation
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-use Illuminate\Validation\Rule; // Import Rule untuk validasi unik
+use Illuminate\Validation\Rule; // Import Rule for unique validation
 
 class ClassController extends Controller implements HasMiddleware
 {
-    // Middleware untuk otorisasi akses ke setiap method
+    // Middleware for authorizing access to each method
     public static function middleware()
     {
         return [
@@ -25,13 +25,13 @@ class ClassController extends Controller implements HasMiddleware
 
     /**
      * Display a listing of the resource.
-     * Menampilkan daftar resource (Kelas).
+     * Displays the list of resources (Classes).
      */
     public function index(Request $request)
     {
-        $query = Classes::query(); // Menggunakan Model Classes
+        $query = ClassModel::query(); // Using ClassModel
 
-        // Implementasi Pencarian
+        // Search Implementation
         if ($request->has('search')) {
             $query->where('nama_kelas', 'like', '%' . $request->search . '%')
                   ->orWhereHas('major', function ($q) use ($request) {
@@ -39,44 +39,44 @@ class ClassController extends Controller implements HasMiddleware
                   });
         }
 
-        // Implementasi Pagination
+        // Pagination Implementation
         $perPage = $request->input('perPage', 10);
 
-        $classes = $query->with('major') // Eager load relasi major
-                         ->orderBy('nama_kelas') // Urutkan berdasarkan nama kelas
+        $classes = $query->with('major') // Eager load major relation
+                         ->orderBy('nama_kelas') // Order by class name
                          ->paginate($perPage)
-                         ->withQueryString(); // Pertahankan query string (filter, perPage) di link pagination
+                         ->withQueryString(); // Preserve query string (filter, perPage) in pagination links
 
-        // Render halaman Index Kelas menggunakan Inertia
+        // Render Class Index page using Inertia
         return Inertia::render('Classes/Index', [
-            'classes' => $classes, // Kirim data Kelas ke komponen React
-            'filters' => $request->only(['search']), // Kirim filter yang aktif kembali ke frontend
-            'perPage' => (int) $perPage, // Kirim kembali nilai perPage yang aktif
+            'classes' => $classes, // Send Class data to React component
+            'filters' => $request->only(['search']), // Send active filters back to frontend
+            'perPage' => (int) $perPage, // Send back active perPage value
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
-     * Menampilkan form untuk membuat resource baru (Kelas).
+     * Displays the form for creating a new resource (Class).
      */
     public function create()
     {
-        // Ambil daftar Jurusan untuk dropdown di form
+        // Get list of Majors for the dropdown in the form
         $majors = Major::orderBy('nama_jurusan')->get(['id', 'nama_jurusan']);
 
-        // Render halaman Create Kelas menggunakan Inertia
+        // Render Class Create page using Inertia
         return Inertia::render('Classes/Create', [
-            'majors' => $majors, // Kirim daftar Jurusan ke frontend
+            'majors' => $majors, // Send list of Majors to frontend
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
-     * Menyimpan resource yang baru dibuat ke database.
+     * Stores the newly created resource to the database.
      */
     public function store(Request $request)
     {
-        // Validasi Input
+        // Input Validation
         $request->validate([
             'nama_kelas' => [
                 'required',
@@ -84,63 +84,63 @@ class ClassController extends Controller implements HasMiddleware
                 'max:255',
                 Rule::unique('classes')->where(fn ($query) => $query->where('major_id', $request->major_id)),
             ],
-            'major_id' => ['required', 'integer', 'exists:majors,id'], // Pastikan ID Jurusan valid
+            'major_id' => ['required', 'integer', 'exists:majors,id'], // Ensure Major ID is valid
         ]);
 
-        // Buat dan Simpan Data Baru
-        Classes::create($request->all()); // Menggunakan Model Classes
+        // Create and Save New Data
+        ClassModel::create($request->all()); // Using ClassModel
 
-        // Redirect ke halaman index dengan flash message sukses
+        // Redirect to index page with success flash message
         return redirect()->route('classes.index')
-                         ->with('success', 'Data Kelas berhasil ditambahkan.');
+                         ->with('success', 'Class data successfully added.');
     }
 
     /**
      * Display the specified resource.
-     * Menampilkan resource spesifik (Kelas).
+     * Displays the specified resource (Class).
      *
-     * @param  \App\Models\Classes  $class
+     * @param  \App\Models\ClassModel  $class
      * @return \Illuminate\Http\Response
      */
-    public function show(Classes $class)
+    public function show(ClassModel $class)
     {
-        // Method show tidak digunakan dalam alur CRUD ini
+        // The show method is not used in this CRUD flow
         abort(404);
     }
 
     /**
      * Show the form for editing the specified resource.
-     * Menampilkan form untuk mengedit resource spesifik (Kelas).
+     * Displays the form for editing the specified resource (Class).
      *
-     * @param  \App\Models\Classes  $class
+     * @param  \App\Models\ClassModel  $class
      * @return \Illuminate\Http\Response
      */
-    public function edit(Classes $class)
+    public function edit(ClassModel $class)
     {
-        // Eager load relasi Major jika perlu ditampilkan di form edit
+        // Eager load Major relation if needed to be displayed in the edit form
         $class->load('major');
 
-        // Ambil daftar Jurusan untuk dropdown
+        // Get list of Majors for the dropdown
         $majors = Major::orderBy('nama_jurusan')->get(['id', 'nama_jurusan']);
 
-        // Render halaman Edit Kelas menggunakan Inertia
+        // Render Class Edit page using Inertia
         return Inertia::render('Classes/Edit', [
-            'class' => $class, // Kirim objek Kelas ke komponen React
-            'majors' => $majors, // Kirim daftar Jurusan ke frontend
+            'class' => $class, // Send Class object to React component
+            'majors' => $majors, // Send list of Majors to frontend
         ]);
     }
 
     /**
      * Update the specified resource in storage.
-     * Memperbarui resource spesifik di database.
+     * Updates the specified resource in the database.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Classes  $class
+     * @param  \App\Models\ClassModel  $class
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Classes $class)
+    public function update(Request $request, ClassModel $class)
     {
-        // Validasi Input
+        // Input Validation
         $request->validate([
             'nama_kelas' => [
                 'required',
@@ -152,27 +152,27 @@ class ClassController extends Controller implements HasMiddleware
         ]);
 
         // Update Data
-        $class->update($request->all()); // Menggunakan Model Classes
+        $class->update($request->all()); // Using ClassModel
 
-        // Redirect ke halaman index setelah berhasil mengupdate
+        // Redirect to index page after successful update
         return redirect()->route('classes.index')
-                         ->with('success', 'Data Kelas berhasil diperbarui.');
+                         ->with('success', 'Class data successfully updated.');
     }
 
     /**
      * Remove the specified resource from storage.
-     * Menghapus resource spesifik dari database.
+     * Deletes the specified resource from the database.
      *
-     * @param  \App\Models\Classes  $class
+     * @param  \App\Models\ClassModel  $class
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Classes $class)
+    public function destroy(ClassModel $class)
     {
-        // Hapus Data
-        $class->delete(); // Menggunakan Model Classes
+        // Delete Data
+        $class->delete(); // Using ClassModel
 
-        // Redirect kembali ke halaman index dengan flash message sukses
+        // Redirect back to index page with success flash message
         return redirect()->route('classes.index')
-                         ->with('success', 'Data Kelas berhasil dihapus.');
+                         ->with('success', 'Class data successfully deleted.');
     }
 }
