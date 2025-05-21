@@ -59,7 +59,7 @@ class DatabaseSeeder extends Seeder
 
         // Panggil seeder untuk Kelas, Siswa, dan Pendaftaran
         // Pastikan seeder-seeder ini sudah Anda buat di langkah sebelumnya
-        $this->call(ClassSeeder::class); // Membutuhkan Major
+        $this->call(ClassModelSeeder::class); // Membutuhkan Major
         $this->call(StudentSeeder::class); // Membutuhkan User
         $this->call(EnrollmentSeeder::class); // Membutuhkan Student, Class, AcademicYear, Semester
     }

@@ -24,26 +24,28 @@ class StudentFactory extends Factory
      */
     public function definition(): array
     {
-        // Pastikan ada user untuk dihubungkan, atau buat jika tidak ada
-        $user = User::inRandomOrder()->first();
-        if (!$user) {
-            $user = User::factory()->create(); // Buat user dummy jika belum ada
-        }
+        // === MODIFIKASI: Selalu buat user baru untuk setiap siswa ===
+        // Ini akan memastikan user_id selalu unik.
+        $user = User::factory()->create([
+            'email' => $this->faker->unique()->safeEmail(),
+            'password' => Hash::make('password'), // Password default
+        ]);
+        // ==========================================================
 
         return [
-            'nisn' => $this->faker->unique()->numerify('##########'), // 10 digit NISN
-            'nit' => $this->faker->unique()->numerify('#########'),  // 9 digit NIT
+            'nisn' => $this->faker->unique()->numerify('##########'),
+            'nit' => $this->faker->unique()->numerify('#########'),
             'nama_lengkap' => $this->faker->name(),
             'jenis_kelamin' => $this->faker->randomElement(['L', 'P']),
             'tempat_lahir' => $this->faker->city(),
             'tanggal_lahir' => $this->faker->date(),
-            'agama' => $this->faker->randomElement(['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu']),
+            'agama' => $this->faker->randomElement(Student::ALL_STATUSES), // Pastikan ini benar (seharusnya agama, bukan status)
             'no_hp' => $this->faker->phoneNumber(),
-            'email' => $this->faker->unique()->safeEmail(),
+            'email' => $this->faker->unique()->safeEmail(), // Email siswa juga harus unik
             'alamat' => $this->faker->address(),
-            'status_akun' => $this->faker->randomElement(Student::ALL_STATUSES), // Menggunakan konstanta dari model
-            'foto_profil' => null, // Atau gunakan faker->imageUrl() jika ingin gambar dummy
-            'user_id' => $user->id,
+            'status_akun' => $this->faker->randomElement(Student::ALL_STATUSES),
+            'foto_profil' => null,
+            'user_id' => $user->id, // Gunakan ID user yang baru dibuat
         ];
     }
 }
