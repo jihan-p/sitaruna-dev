@@ -73,7 +73,7 @@ export default function Edit({ auth, semester, academicYears }) {
                   checked={data.is_active}
                   onChange={e => setData('is_active', e.target.checked)}
                 />
-                <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">Aktif</label>
+                <label htmlFor="is_active" className="ml-2 text-sm text-gray-700"></label>
               </div>
             </FormGroup>
 
