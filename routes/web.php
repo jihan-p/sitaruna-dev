@@ -8,7 +8,8 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\SemesterController;
-use App\Http\Controllers\ClassController; 
+use App\Http\Controllers\ClassController;
+use App\Http\Controllers\EnrollmentController; 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -51,6 +52,9 @@ Route::middleware('auth')->group(function () {
 
     // class route
     Route::resource('classes', ClassController::class);
+
+    // enrollments route
+    Route::resource('enrollments', EnrollmentController::class);
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

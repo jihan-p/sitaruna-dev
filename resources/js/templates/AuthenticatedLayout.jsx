@@ -290,7 +290,7 @@ export default function AuthenticatedLayout({ user: authUser, header, children }
                      )}
                      {/* =============================== */}
 
-                     {/* {user && hasAnyPermission(['enrollments index']) && (
+                     {user && hasAnyPermission(['enrollments index']) && (
                          <NavLink
                             href={route('enrollments.index')}
                             active={route().current('enrollments.index')}
@@ -298,9 +298,9 @@ export default function AuthenticatedLayout({ user: authUser, header, children }
                             isMobile={isMobile}
                             icon={IconSchool}
                          >
-                            Enrollment
+                            Pendaftaran
                          </NavLink>
-                     )} */}
+                     )}
 
 
                 </nav>
