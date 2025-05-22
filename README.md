@@ -5,27 +5,41 @@ Repository ini berisi kode sumber dan aset terkait pengembangan **SITARUNA**, ya
 **Tujuan Proyek:**
 Proyek SITARUNA bertujuan untuk mengintegrasikan dan mendigitalisasi berbagai proses dan data penting di SMKN 2 Subang ke dalam satu platform terpadu. Fokus utamanya adalah pada pengelolaan informasi akademik dan aspek ketarunaan siswa.
 
-**Cakupan Utama:**
-Sistem ini dirancang untuk mencakup modul-modul kunci yang relevan, seperti:
-* Manajemen data induk sekolah (siswa, guru, staf, rombel, mata pelajaran).
-* Pengelolaan informasi akademik (jadwal, presensi, nilai, e-rapor).
-* Manajemen data dan kegiatan ketarunaan (catatan kedisiplinan, kegiatan pembinaan, prestasi non-akademik).
-* [Opsional: Tambahkan modul lain yang relevan, contoh: Manajemen Aset, Perpustakaan, Keuangan, BK, PPDB Online].
+**Cakupan Utama Saat Ini:**
+Sistem ini saat ini mencakup modul-modul kunci yang telah diimplementasikan di sisi frontend (dengan React/Inertia.js):
+*   **Sistem Otentikasi:**
+    *   Login Pengguna
+    *   Registrasi Pengguna
+    *   Reset dan Konfirmasi Password
+    *   Verifikasi Email
+*   **Manajemen Pengguna:**
+    *   Pengelolaan Data Pengguna (CRUD: Create, Read, Update, Delete)
+    *   Pengelolaan Peran (Roles) dan Hak Akses (Permissions)
+    *   Manajemen Profil Pengguna (Update Profil, Update Password, Hapus Akun)
+*   **Manajemen Data Akademik:**
+    *   Pengelolaan Data Tahun Ajaran (CRUD)
+    *   Pengelolaan Data Semester (CRUD)
+    *   Pengelolaan Data Jurusan (CRUD)
+    *   Pengelolaan Data Kelas (CRUD)
+    *   Pengelolaan Data Peserta Didik (CRUD dan Detail)
+    *   Pengelolaan Data Pendaftaran Siswa (Enrollments) (CRUD)
+*   **Dashboard:**
+    *   Tampilan Dashboard untuk pengguna terautentikasi.
+*   **Landing Page:**
+    *   Halaman depan website dengan informasi umum (Home, Courses, Programs, Teachers, Kontak Kami).
 
 **Manfaat yang Diharapkan:**
-* Meningkatkan efisiensi dan akurasi dalam administrasi sekolah.
-* Mempermudah akses informasi bagi siswa, guru, staf, dan manajemen.
-* Mendukung proses pengambilan keputusan berbasis data.
-* Memperkuat pembinaan karakter dan kedisiplinan siswa taruna melalui data yang terpusat.
-* Menciptakan lingkungan digital yang terintegrasi di SMKN 2 Subang.
+*   Meningkatkan efisiensi dan akurasi dalam administrasi sekolah.
+*   Mempermudah akses informasi bagi siswa, guru, staf, dan manajemen.
+*   Mendukung proses pengambilan keputusan berbasis data.
+*   Memperkuat pembinaan karakter dan kedisiplinan siswa taruna melalui data yang terpusat.
+*   Menciptakan lingkungan digital yang terintegrasi di SMKN 2 Subang.
 
 **Status Proyek:**
-[Contoh: Saat ini proyek berada pada tahap pengembangan awal / beta testing / siap untuk implementasi penuh. Detail perkembangan terbaru dapat dilihat pada bagian Issues dan Pull Requests.]
+Saat ini proyek sedang dalam tahap pengembangan. Modul-modul dasar untuk manajemen pengguna, peran & izin, dan data akademik inti telah diimplementasikan pada antarmuka pengguna. Pengembangan lebih lanjut untuk modul akademik yang lebih rinci (seperti pengelolaan nilai, presensi, dll.) dan modul ketarunaan sedang berlangsung.
 
 ---
 
 **Catatan:**
 
-* Bagian dalam kurung siku `[]` bersifat opsional atau perlu disesuaikan dengan kondisi riil proyek Anda.
-* Anda bisa menambahkan informasi kontak, panduan kontribusi (jika open source), atau link ke dokumentasi terpisah jika ada.
-* Pesan ini cukup komprehensif untuk memberikan gambaran jelas tentang apa itu SITARUNA dan ruang lingkupnya.
+*   Anda bisa menambahkan informasi kontak, panduan kontribusi (jika open source), atau link ke dokumentasi terpisah jika ada.
