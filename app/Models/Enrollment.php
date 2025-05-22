@@ -9,10 +9,6 @@ class Enrollment extends Model
 {
     use HasFactory;
 
-    // Tentukan nama tabel jika tidak mengikuti konvensi Laravel (plural dari nama model)
-    // protected $table = 'enrollments'; // Tidak perlu jika nama tabel sudah 'enrollments'
-
-    // Tentukan kolom yang bisa diisi secara massal (mass assignable)
     protected $fillable = [
         'student_id',
         'class_id',
@@ -22,7 +18,7 @@ class Enrollment extends Model
     ];
 
     /**
-     * Get the student that owns the enrollment.
+     * Get the student associated with the enrollment.
      */
     public function student()
     {
@@ -30,26 +26,28 @@ class Enrollment extends Model
     }
 
     /**
-     * Get the class that the enrollment belongs to.
+     * Get the class associated with the enrollment.
      */
-    public function class() // Perhatikan: 'class' adalah reserved keyword. Pertimbangkan 'classModel' atau 'schoolClass'
+    public function class()
     {
-        return $this->belongsTo(ClassModel::class, 'class_id'); // Menggunakan ClassModel karena 'Class' adalah reserved keyword
+        // Menggunakan 'class_id' sebagai foreign key
+        // Dan mengacu pada model ClassModel karena 'Class' adalah reserved keyword
+        return $this->belongsTo(ClassModel::class, 'class_id');
     }
 
     /**
-     * Get the academic year that the enrollment belongs to.
+     * Get the academic year associated with the enrollment.
      */
     public function academicYear()
     {
-        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
+        return $this->belongsTo(AcademicYear::class);
     }
 
     /**
-     * Get the semester that the enrollment belongs to.
+     * Get the semester associated with the enrollment.
      */
     public function semester()
     {
-        return $this->belongsTo(Semester::class, 'semester_id');
+        return $this->belongsTo(Semester::class);
     }
 }
